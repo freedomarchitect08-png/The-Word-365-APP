@@ -1324,7 +1324,7 @@ if ("serviceWorker" in navigator) {
 </script>
 <script>
 (function() {
-  var U='https://fnlcwwqltqksowtlefpb.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyMTUxMTMsImV4cCI6MjA1OTc5MTExM30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw',VK='word_visitor_id';
+  var U='https://fnlcwwqltqksowtlefpb.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MzUxOTMsImV4cCI6MjA5MTUxMTE5M30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw',VK='word_visitor_id';
   var vid=localStorage.getItem(VK);
   if(!vid){vid='V-'+Math.random().toString(36).substr(2,8).toUpperCase();localStorage.setItem(VK,vid);}
   fetch(U+'/rest/v1/visits?visitor_id=eq.'+vid+'&select=id',{headers:{'apikey':K,'Authorization':'Bearer '+K}})
