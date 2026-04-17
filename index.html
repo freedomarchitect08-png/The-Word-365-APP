@@ -1335,5 +1335,48 @@ if ("serviceWorker" in navigator) {
   }).catch(function(){});
 })();
 </script>
+
+<div id="emailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.85);z-index:99999;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:32px 28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <button onclick="closeEmailModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;color:#888;cursor:pointer;line-height:1;">&times;</button>
+    <div style="text-align:center;margin-bottom:8px;"><span style="color:#C9A84C;font-size:28px;">&#10022;</span></div>
+    <h2 style="font-size:22px;font-weight:700;text-align:center;margin:0 0 8px;color:#0f172a;">Welcome to The Word 365</h2>
+    <p style="font-size:14px;color:#64748b;text-align:center;margin:0 0 24px;line-height:1.5;">Get free Bible app updates &amp; join our faith-filled community for inspiration delivered straight to your inbox.</p>
+    <input id="emFirst" type="text" placeholder="First name" style="width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;margin-bottom:10px;outline:none;box-sizing:border-box;">
+    <input id="emEmail" type="email" placeholder="Your email address" style="width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;margin-bottom:14px;outline:none;box-sizing:border-box;">
+    <button onclick="submitEmail()" id="emBtn" style="width:100%;padding:14px;background:#0f172a;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">Join the community &#10022;</button>
+    <p id="emMsg" style="font-size:12px;color:#64748b;text-align:center;margin:12px 0 0;min-height:18px;"></p>
+    <p style="font-size:11px;color:#94a3b8;text-align:center;margin:8px 0 0;">No spam. Unsubscribe anytime.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var SU="https://fnlcwwqltqksowtlefpb.supabase.co";
+  var SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MzUxOTMsImV4cCI6MjA5MTUxMTE5M30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw";
+  var SHOWN="tw365_email_shown";
+  setTimeout(function(){
+    if(!localStorage.getItem(SHOWN)){
+      document.getElementById("emailModal").style.display="flex";
+      localStorage.setItem(SHOWN,"1");
+    }
+  },3000);
+  window.closeEmailModal=function(){document.getElementById("emailModal").style.display="none";};
+  window.submitEmail=function(){
+    var em=document.getElementById("emEmail").value.trim();
+    var fn=document.getElementById("emFirst").value.trim();
+    var msg=document.getElementById("emMsg");
+    var btn=document.getElementById("emBtn");
+    if(!em||!/^[^@]+@[^@]+\.[^@]+$/.test(em)){msg.textContent="Please enter a valid email";msg.style.color="#dc2626";return;}
+    btn.disabled=true;btn.textContent="Joining...";
+    var vid=localStorage.getItem("word_visitor_id")||"";
+    fetch(SU+"/rest/v1/subscribers",{method:"POST",headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({email:em,first_name:fn,visitor_id:vid,source:"theword365app_popup"})}).then(function(r){
+      if(r.ok||r.status===201){msg.textContent="\u2728 You are in! Check your inbox soon.";msg.style.color="#16a34a";setTimeout(closeEmailModal,2000);}
+      else if(r.status===409){msg.textContent="You are already subscribed!";msg.style.color="#16a34a";setTimeout(closeEmailModal,2000);}
+      else{msg.textContent="Something went wrong. Try again.";msg.style.color="#dc2626";btn.disabled=false;btn.textContent="Join the community \u2728";}
+    }).catch(function(){msg.textContent="Connection error. Try again.";msg.style.color="#dc2626";btn.disabled=false;btn.textContent="Join the community \u2728";});
+  };
+})();
+</script>
+
 </body>
 </html>
