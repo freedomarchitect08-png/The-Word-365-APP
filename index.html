@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Word 365</title>
+
+<!-- PWA Meta Tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Word 365">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="The Word 365">
+<meta name="theme-color" content="#0D1B2A">
+<meta name="description" content="Read through the entire Bible in one year with audio narration. Chronological plan. 365 days.">
+
+<!-- App Icons for iPhone home screen -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230D1B2A'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%23C9A84C' stroke-width='8'/%3E%3Ctext x='256' y='200' font-family='serif' font-size='80' fill='%23C9A84C' text-anchor='middle'%3E✦%3C/text%3E%3Ctext x='256' y='290' font-family='serif' font-size='52' font-weight='bold' fill='%23E8D08A' text-anchor='middle'%3ETHE%3C/text%3E%3Ctext x='256' y='350' font-family='serif' font-size='36' fill='%23F5F0E8' text-anchor='middle'%3EWORD 365%3C/text%3E%3C/svg%3E">
+
+<!-- Manifest for Android -->
+<link rel="manifest" href="/manifest.json">
+
+<style>
+/* System fonts — no external dependencies */
+:root {
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-display: 'Palatino Linotype', 'Palatino', 'Book Antiqua', Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8D08A;
+  --gold-dim: #8B6914;
+  --ivory: #F5F0E8;
+  --navy: #0D1B2A;
+  --navy-mid: #162435;
+  --navy-light: #1E3248;
+  --text-light: #F0EAD6;
+  --text-muted: #A89060;
+  --font-size: 18px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--navy);
+  color: var(--text-light);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.04) 0%, transparent 40%);
+  pointer-events:none; z-index:0;
+}
+.app { position:relative; z-index:2; max-width:920px; margin:0 auto; padding:0 18px 40px; }
+
+header {
+  text-align:center; padding:44px 20px 24px;
+  border-bottom:1px solid rgba(201,168,76,0.18); margin-bottom:24px;
+}
+.header-eyebrow { font-family:var(--font-display); font-size:10px; letter-spacing:6px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; }
+h1 { font-family:var(--font-display); font-size:clamp(34px,7vw,56px); font-weight:700; letter-spacing:5px; color:var(--gold-light); text-shadow:0 0 40px rgba(201,168,76,0.28); margin-bottom:6px; }
+h1 em { color:var(--ivory); font-style:normal; font-weight:400; }
+.subtitle { font-family:var(--font-serif); font-style:italic; font-size:17px; color:var(--text-muted); letter-spacing:1px; }
+
+.tabs { display:flex; gap:4px; margin-bottom:22px; background:var(--navy-mid); padding:4px; border-radius:10px; border:1px solid rgba(201,168,76,0.1); }
+.tab { flex:1; background:transparent; border:none; color:var(--text-muted); padding:10px 8px; border-radius:7px; cursor:pointer; font-family:var(--font-display); font-size:10px; letter-spacing:2px; text-transform:uppercase; transition:all .2s; }
+.tab.active { background:rgba(201,168,76,0.12); color:var(--gold); border:1px solid rgba(201,168,76,0.25); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+.progress-wrap { background:var(--navy-mid); border:1px solid rgba(201,168,76,0.15); border-radius:12px; padding:18px 22px; margin-bottom:20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.prog-info { flex:1; min-width:180px; }
+.prog-label { font-family:var(--font-display); font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; }
+.prog-track { height:4px; background:rgba(201,168,76,0.15); border-radius:2px; overflow:hidden; margin-bottom:6px; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--gold-dim),var(--gold-light)); border-radius:2px; transition:width .5s ease; }
+.prog-text { font-size:12px; color:var(--text-muted); }
+.day-badge { text-align:center; }
+.day-num { font-family:var(--font-display); font-size:44px; color:var(--gold); line-height:1; text-shadow:0 0 20px rgba(201,168,76,0.35); }
+.day-lbl { font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase; }
+
+.vod { border-left:3px solid var(--gold); border-radius:0 10px 10px 0; background:rgba(201,168,76,0.05); padding:16px 20px; margin-bottom:20px; }
+.vod-lbl { font-family:var(--font-display); font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:7px; }
+.vod-text { font-family:var(--font-serif); font-style:italic; font-size:17px; color:var(--ivory); line-height:1.65; margin-bottom:5px; }
+.vod-ref { font-size:11px; color:var(--text-muted); letter-spacing:1px; }
+
+.ctrl-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px; }
+.sel-block { display:flex; flex-direction:column; flex:1; min-width:130px; }
+.sel-lbl { font-family:var(--font-display); font-size:9px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:5px; }
+.sel-wrap { position:relative; }
+select { width:100%; background:var(--navy-mid); border:1px solid rgba(201,168,76,0.28); color:var(--ivory); padding:9px 12px; border-radius:8px; font-family:var(--font-body); font-size:13px; cursor:pointer; appearance:none; -webkit-appearance:none; outline:none; transition:border-color .2s; }
+select:focus { border-color:var(--gold); }
+.sel-wrap::after { content:'▾'; position:absolute; right:10px; bottom:11px; color:var(--gold); pointer-events:none; font-size:10px; }
+
+.font-ctrl { display:flex; align-items:center; gap:6px; }
+.font-btn { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); color:var(--gold); border-radius:7px; cursor:pointer; font-size:13px; font-weight:700; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:all .2s; font-family:var(--font-display); }
+.font-btn:hover { background:rgba(201,168,76,0.22); }
+.font-size-disp { font-family:var(--font-display); font-size:10px; letter-spacing:1px; color:var(--text-muted); text-align:center; min-width:30px; }
+
+.nav-btn { background:transparent; border:1px solid rgba(201,168,76,0.35); color:var(--gold); padding:9px 14px; border-radius:8px; cursor:pointer; font-family:var(--font-display); font-size:10px; letter-spacing:2px; text-transform:uppercase; transition:all .2s; white-space:nowrap; height:36px; display:flex; align-items:center; justify-content:center; }
+.nav-btn:hover { background:rgba(201,168,76,0.1); border-color:var(--gold); }
+.nav-btn.primary { background:linear-gradient(135deg,var(--gold-dim),var(--gold)); border-color:var(--gold); color:var(--navy); font-weight:700; }
+.nav-btn.primary:hover { background:linear-gradient(135deg,var(--gold),var(--gold-light)); transform:translateY(-1px); box-shadow:0 4px 18px rgba(201,168,76,0.28); }
+
+.reading-card { background:var(--navy-mid); border:1px solid rgba(201,168,76,0.16); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+.reading-head { background:linear-gradient(135deg,var(--navy-light),rgba(201,168,76,0.07)); padding:18px 24px; border-bottom:1px solid rgba(201,168,76,0.13); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.reading-head h2 { font-family:var(--font-display); font-size:20px; color:var(--gold-light); letter-spacing:2px; margin-bottom:3px; }
+.reading-meta { font-size:12px; color:var(--text-muted); }
+.reading-tag { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.28); color:var(--gold); padding:4px 12px; border-radius:20px; font-size:10px; letter-spacing:2px; font-family:var(--font-display); text-transform:uppercase; }
+
+.scripture-scroll { padding:26px 28px; max-height:460px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--gold-dim) transparent; }
+.scripture-scroll::-webkit-scrollbar { width:4px; }
+.scripture-scroll::-webkit-scrollbar-thumb { background:var(--gold-dim); border-radius:2px; }
+
+.chapter-head { font-family:var(--font-display); font-size:13px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin:32px 0 18px; padding-bottom:10px; border-bottom:1px solid rgba(201,168,76,0.14); }
+.chapter-head:first-child { margin-top:0; }
+.verse-line { font-family:var(--font-serif); font-size:var(--font-size); line-height:2.0; color:var(--text-light); margin-bottom:8px; transition:font-size .2s; }
+.verse-num { font-size:.6em; color:var(--gold); vertical-align:super; margin-right:3px; font-family:var(--font-display); }
+
+.audio-player { background:linear-gradient(135deg,var(--navy),rgba(201,168,76,0.05)); border:1px solid rgba(201,168,76,0.18); border-radius:14px; padding:22px 26px; margin-bottom:20px; }
+.now-label { font-family:var(--font-display); font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); animation:glow 2s ease-in-out infinite; }
+@keyframes glow { 0%,100%{opacity:.4} 50%{opacity:1} }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+/* iPhone notch safe area */
+.app { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+.audio-top { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.voice-avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,var(--gold-dim),var(--navy-light)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 0 18px rgba(201,168,76,0.2); flex-shrink:0; }
+.voice-name { font-family:var(--font-serif); font-size:19px; color:var(--ivory); font-style:italic; }
+.voice-sub { font-size:10px; color:var(--text-muted); letter-spacing:1px; margin-top:2px; }
+.audio-track { height:3px; background:rgba(201,168,76,0.18); border-radius:2px; margin-bottom:6px; cursor:pointer; overflow:hidden; }
+.audio-fill { height:100%; background:linear-gradient(90deg,var(--gold-dim),var(--gold)); border-radius:2px; width:0%; transition:width .15s linear; }
+.audio-times { display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); letter-spacing:1px; margin-bottom:14px; }
+.audio-btns { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.play-btn { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,var(--gold-dim),var(--gold)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--navy); transition:all .2s; flex-shrink:0; box-shadow:0 4px 14px rgba(201,168,76,0.3); }
+.play-btn:hover { transform:scale(1.08); box-shadow:0 6px 22px rgba(201,168,76,0.4); }
+.ctrl-btn { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.28); color:var(--gold); padding:7px 12px; border-radius:7px; font-size:10px; cursor:pointer; font-family:var(--font-display); letter-spacing:1px; transition:all .2s; text-transform:uppercase; white-space:nowrap; }
+.ctrl-btn:hover { background:rgba(201,168,76,0.18); }
+.ctrl-btn.on { background:rgba(201,168,76,0.22); border-color:var(--gold); }
+
+.voice-section { margin-top:16px; padding-top:14px; border-top:1px solid rgba(201,168,76,0.1); max-height:320px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--gold-dim) transparent; }
+.voice-section::-webkit-scrollbar { width:4px; }
+.voice-section::-webkit-scrollbar-thumb { background:var(--gold-dim); border-radius:2px; }
+.voice-section-title { font-family:var(--font-display); font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; }
+.voice-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.voice-chip { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.18); color:var(--text-muted); padding:6px 11px; border-radius:8px; cursor:pointer; font-size:11px; font-family:var(--font-display); letter-spacing:1px; text-align:center; transition:all .2s; text-transform:uppercase; display:flex; align-items:center; }
+.voice-chip:hover { border-color:rgba(201,168,76,0.4); color:var(--gold); }
+.voice-chip.on { background:rgba(201,168,76,0.16); border-color:var(--gold); color:var(--gold); }
+
+.plan-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:9px; }
+.plan-item { background:var(--navy-mid); border:1px solid rgba(201,168,76,0.1); border-radius:9px; padding:13px 11px; text-align:center; cursor:pointer; transition:all .2s; position:relative; }
+.plan-item:hover { border-color:rgba(201,168,76,0.4); background:var(--navy-light); }
+.plan-item.active { border-color:var(--gold); background:rgba(201,168,76,0.08); }
+.plan-item.done::after { content:'✓'; position:absolute; top:5px; right:8px; font-size:10px; color:var(--gold); }
+.plan-wk { font-family:var(--font-display); font-size:9px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:5px; }
+.plan-books { font-family:var(--font-serif); font-size:13px; color:var(--text-light); line-height:1.35; }
+.plan-days { font-size:9px; color:var(--text-muted); margin-top:3px; }
+
+.settings-card { background:var(--navy-mid); border:1px solid rgba(201,168,76,0.15); border-radius:14px; padding:24px; margin-bottom:16px; }
+.s-title { font-family:var(--font-display); font-size:11px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(201,168,76,0.1); }
+.s-row { margin-bottom:16px; }
+.s-note { font-family:var(--font-serif); font-style:italic; font-size:14px; color:var(--text-muted); line-height:1.75; margin-top:8px; }
+
+footer { text-align:center; padding:24px 20px 36px; border-top:1px solid rgba(201,168,76,0.08); margin-top:10px; }
+footer p { font-family:var(--font-serif); font-style:italic; font-size:13px; color:var(--text-muted); }
+
+@media(max-width:600px){
+  .ctrl-row { flex-direction:column; }
+  .sel-block, .nav-btn { width:100%; }
+  .font-ctrl { justify-content:center; }
+  .audio-btns { justify-content:center; }
+  .voice-chips { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="header-eyebrow">✦ Sacred Scripture ✦</div>
+  <h1>THE <em>WORD</em></h1>
+  <p class="subtitle">Bible in a Year — Chronological Reading Plan</p>
+</header>
+
+<div class="vod">
+  <div class="vod-lbl">✦ Verse of the Day</div>
+  <div class="vod-text">"Your word is a lamp to my feet and a light to my path."</div>
+  <div class="vod-ref">— Psalm 119:105</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="prog-info">
+    <div class="prog-label">Your Journey</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-text" id="progText">Day 1 of 365</div>
+  </div>
+  <div class="day-badge">
+    <div class="day-num" id="dayDisplay">1</div>
+    <div class="day-lbl">Day</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today')">📖 Today</button>
+  <button class="tab" onclick="switchTab('plan')">📅 Full Plan</button>
+  <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+
+<!-- TODAY -->
+<div class="tab-panel active" id="tab-today">
+
+  <div class="ctrl-row">
+    <div class="sel-block">
+      <div class="sel-lbl">Translation</div>
+      <div class="sel-wrap">
+        <select id="versionSelect">
+          <option value="kjv">KJV  King James Version</option>
+          <option value="web" selected>WEB  World English Bible</option>
+          <option value="asv">ASV  American Standard Version</option>
+          <option value="bbe">BBE  Bible in Basic English</option>
+          <option value="nlt">NLT  New Living Translation</option>
+          <option value="niv">NIV  New International Version</option>
+          <option value="esv">ESV  English Standard Version</option>
+          <option value="amp">AMP  Amplified Bible</option>
+          <option value="msg">MSG  The Message</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sel-block">
+      <div class="sel-lbl">Jump to Day</div>
+      <div class="sel-wrap">
+        <select id="daySelect" onchange="jumpToDay()"></select>
+      </div>
+    </div>
+
+    <div class="sel-block" style="flex:0 0 auto;">
+      <div class="sel-lbl">Text Size</div>
+      <div class="font-ctrl">
+        <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease">A−</button>
+        <span class="font-size-disp" id="fontSizeDisp">18</span>
+        <button class="font-btn" onclick="changeFontSize(2)" title="Increase">A+</button>
+      </div>
+    </div>
+
+    <button class="nav-btn" onclick="prevDay()" style="align-self:flex-end;">← Prev</button>
+    <button class="nav-btn primary" onclick="markComplete()" style="align-self:flex-end;" id="completeBtn">Complete ✓</button>
+    <button class="nav-btn" onclick="nextDay()" style="align-self:flex-end;">Next →</button>
+  </div>
+
+  <div class="reading-card">
+    <div class="reading-head">
+      <div>
+        <h2 id="readingTitle">Loading…</h2>
+        <div class="reading-meta" id="readingMeta"></div>
+      </div>
+      <div class="reading-tag" id="readingTag">Day 1</div>
+    </div>
+    <div class="scripture-scroll" id="scriptureScroll">
+      <div style="text-align:center;padding:40px;color:var(--text-muted);font-family:var(--font-serif);font-style:italic;font-size:18px;">
+        <div style="font-size:28px;color:var(--gold);margin-bottom:10px;animation:glow 2s infinite;">✦</div>
+        Preparing today's reading…
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIO PLAYER -->
+  <div class="audio-player">
+    <div class="now-label"><span class="live-dot"></span>Now Narrating</div>
+    <div class="audio-top">
+      <div class="voice-avatar" id="voiceAvatar">🎙️</div>
+      <div>
+        <div class="voice-name" id="voiceNameDisp">Choose a Voice Below</div>
+        <div class="voice-sub" id="voiceSubDisp">Browser Text-to-Speech · Free</div>
+      </div>
+    </div>
+    <div class="audio-track" onclick="seekAudio(event)">
+      <div class="audio-fill" id="audioFill"></div>
+    </div>
+    <div class="audio-times"><span id="audioPos">0:00</span><span id="audioDur">—:——</span></div>
+    <div class="audio-btns">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="stopAudio()">■ Stop</button>
+      <button class="ctrl-btn" id="speedBtn" onclick="cycleSpeed()">1× Speed</button>
+      <button class="ctrl-btn" onclick="rewindAudio()">↺ Restart</button>
+      <button class="ctrl-btn" id="autoBtn" onclick="toggleAutoAdvance()">Auto: OFF</button>
+    </div>
+
+    <div class="voice-section">
+      <div class="voice-section-title">Select Narrator Voice</div>
+      <div class="voice-chips" id="voiceChips">
+        <div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px;">Loading voices from your device…</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /today -->
+
+<!-- FULL PLAN -->
+<div class="tab-panel" id="tab-plan">
+  <div class="plan-grid" id="planGrid"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="tab-panel" id="tab-settings">
+
+  <div class="settings-card">
+    <div class="s-title">Reading Preferences</div>
+    <div class="s-row">
+      <div class="sel-lbl">Reading Plan Style</div>
+      <div class="sel-wrap">
+        <select id="planStyleSetting">
+          <option selected>Chronological (Historical Order)</option>
+          <option>Old Testament → New Testament</option>
+          <option>New Testament First</option>
+          <option>Psalms & Proverbs Woven In Daily</option>
+        </select>
+      </div>
+    </div>
+    <div class="s-row">
+      <div class="sel-lbl">Text Size</div>
+      <div class="font-ctrl" style="justify-content:flex-start;gap:10px;">
+        <button class="font-btn" onclick="changeFontSize(-2)">A−</button>
+        <span class="font-size-disp" id="fontSizeDisp2" style="display:flex;align-items:center;min-width:40px;">18px</span>
+        <button class="font-btn" onclick="changeFontSize(2)">A+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <div class="s-title">Audio & Narration</div>
+    <div class="s-row">
+      <div class="sel-lbl">Default Playback Speed</div>
+      <div class="sel-wrap">
+        <select id="defaultSpeedSetting" onchange="applyDefaultSpeed()">
+          <option value="0.5">0.5x  Slowest and Most Reverent</option>
+          <option value="0.75">0.75x  Slow and Peaceful</option>
+          <option value="0.9">0.9x  Relaxed</option>
+          <option value="1" selected>1x  Normal</option>
+          <option value="1.1">1.1x  Brisk</option>
+          <option value="1.25">1.25x  Quick</option>
+          <option value="1.5">1.5x  Fast</option>
+        </select>
+      </div>
+    </div>
+    <div class="s-row">
+      <div class="sel-lbl">When Audio Ends</div>
+      <div class="sel-wrap">
+        <select id="autoAdvanceSetting">
+          <option>Prompt before advancing</option>
+          <option>Auto-advance to next day</option>
+          <option>Stay on current day</option>
+        </select>
+      </div>
+    </div>
+    <div class="s-note">
+      💡 For the best voice experience on iPhone go to Settings then Accessibility then Spoken Content then Voices then English and download Siri Voice 4. On Android use Google UK English Male in your Text to Speech settings.
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <div class="s-title">Progress & Data</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="nav-btn" onclick="resetProgress()">Reset Progress</button>
+      <button class="nav-btn primary" onclick="exportProgress()">Export Progress ↓</button>
+    </div>
+    <div class="s-note" style="margin-top:12px;">Your progress is saved automatically to this browser. Export your progress to back it up.</div>
+  </div>
+
+</div>
+
+<footer>
+  <p>"The grass withers, the flower fades, but the word of our God stands forever." Isaiah 40:8</p>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// CHRONOLOGICAL 365-DAY PLAN
+// ═══════════════════════════════════
+const PLAN_RAW = [
+  [1,"In The Beginning","Genesis 1–2","Creation"],
+  [2,"The Fall of Man","Genesis 3–5","Origins"],
+  [3,"Noah's Ark","Genesis 6–9","Flood"],
+  [4,"Tower of Babel","Genesis 10–11","Nations"],
+  [5,"The Call of Abram","Genesis 12–15","Abraham"],
+  [6,"Covenant & Promise","Genesis 16–18","Promise"],
+  [7,"Sodom & Gomorrah","Genesis 19–21","Judgment"],
+  [8,"The Test of Abraham","Genesis 22–24","Faith"],
+  [9,"Isaac & Rebekah","Genesis 25–26","Heritage"],
+  [10,"Jacob & Esau","Genesis 27–29","Blessing"],
+  [11,"Jacob's Twelve Sons","Genesis 30–31","Family"],
+  [12,"Israel Wrestles God","Genesis 32–34","Wrestle"],
+  [13,"Joseph's Dreams","Genesis 35–37","Vision"],
+  [14,"Joseph in Egypt","Genesis 38–40","Perseverance"],
+  [15,"Pharaoh's Dreams","Genesis 41–42","Providence"],
+  [16,"Brothers Reunited","Genesis 43–45","Forgiveness"],
+  [17,"Jacob Goes to Egypt","Genesis 46–47","Migration"],
+  [18,"Blessings of Jacob","Genesis 48–50","Legacy"],
+  [19,"Moses Is Born","Exodus 1–3","Deliverer"],
+  [20,"Let My People Go","Exodus 4–6","Freedom"],
+  [21,"The Ten Plagues Begin","Exodus 7–9","Plagues"],
+  [22,"Passover Night","Exodus 10–12","Passover"],
+  [23,"Red Sea Crossing","Exodus 13–15","Miracle"],
+  [24,"Manna in the Wilderness","Exodus 16–18","Provision"],
+  [25,"The Ten Commandments","Exodus 19–21","Law"],
+  [26,"Laws of the Covenant","Exodus 22–24","Covenant"],
+  [27,"Plans for the Tabernacle","Exodus 25–27","Tabernacle"],
+  [28,"The Priesthood","Exodus 28–30","Priests"],
+  [29,"The Golden Calf","Exodus 31–33","Rebellion"],
+  [30,"Tabernacle Completed","Exodus 34–36","Glory"],
+  [31,"The Ark of the Covenant","Exodus 37–40","Presence"],
+  [32,"Burnt Offerings","Leviticus 1–3","Worship"],
+  [33,"Sin & Guilt Offerings","Leviticus 4–6","Atonement"],
+  [34,"Priests Consecrated","Leviticus 7–9","Holy"],
+  [35,"Clean & Unclean Laws","Leviticus 10–12","Purity"],
+  [36,"Skin Disease Laws","Leviticus 13–15","Health"],
+  [37,"Day of Atonement","Leviticus 16–17","Yom Kippur"],
+  [38,"Sexual & Moral Laws","Leviticus 18–20","Holiness"],
+  [39,"Priestly Code","Leviticus 21–23","Sacred"],
+  [40,"Sabbath Year & Jubilee","Leviticus 24–27","Jubilee"],
+  [41,"The Census of Israel","Numbers 1–3","Census"],
+  [42,"Levites Duties","Numbers 4–6","Service"],
+  [43,"Cloud & Fire","Numbers 7–9","Guidance"],
+  [44,"Trumpets & Departure","Numbers 10–12","Journey"],
+  [45,"Twelve Spies","Numbers 13–14","Unbelief"],
+  [46,"Korah's Rebellion","Numbers 15–17","Authority"],
+  [47,"The Bronze Serpent","Numbers 18–21","Healing"],
+  [48,"Balaam's Donkey","Numbers 22–24","Prophecy"],
+  [49,"Second Census","Numbers 25–27","New Gen."],
+  [50,"Feasts & Vows","Numbers 28–30","Feasts"],
+  [51,"Canaan Divided","Numbers 31–33","Division"],
+  [52,"Borders of the Land","Numbers 34–36","Promised"],
+  [53,"Moses Final Address","Deuteronomy 1–3","Farewell"],
+  [54,"Remember the Lord","Deuteronomy 4–6","Remember"],
+  [55,"The Greatest Commandment","Deuteronomy 7–9","Love"],
+  [56,"Ark of the Covenant","Deuteronomy 10–12","Ark"],
+  [57,"False Prophets","Deuteronomy 13–16","Warning"],
+  [58,"Kings & Justice","Deuteronomy 17–20","Governance"],
+  [59,"Blessings & Curses","Deuteronomy 21–28","Covenant"],
+  [60,"Song of Moses","Deuteronomy 29–34","Song"],
+  [61,"Joshua Called","Joshua 1–3","Courage"],
+  [62,"Rahab & the Spies","Joshua 4–6","Faith"],
+  [63,"Fall of Jericho","Joshua 7–9","Victory"],
+  [64,"Sun Stands Still","Joshua 10–12","Miracle"],
+  [65,"Land Divided","Joshua 13–17","Heritage"],
+  [66,"Cities of Refuge","Joshua 18–21","Refuge"],
+  [67,"Joshua's Farewell","Joshua 22–24","Legacy"],
+  [68,"Judges of Israel","Judges 1–3","Cycles"],
+  [69,"Deborah the Judge","Judges 4–5","Woman"],
+  [70,"Gideon's 300","Judges 6–8","300"],
+  [71,"Abimelech's Reign","Judges 9–11","Chaos"],
+  [72,"Samson & Delilah","Judges 12–16","Strength"],
+  [73,"Idolatry in Israel","Judges 17–21","Dark Days"],
+  [74,"Ruth & Naomi","Ruth 1–2","Loyalty"],
+  [75,"Boaz Redeems Ruth","Ruth 3–4","Redemption"],
+  [76,"Samuel Is Born","1 Samuel 1–3","Calling"],
+  [77,"The Ark Captured","1 Samuel 4–7","Glory"],
+  [78,"Israel Demands a King","1 Samuel 8–10","Kingdom"],
+  [79,"Saul's Early Reign","1 Samuel 11–13","Saul"],
+  [80,"Jonathan's Faith","1 Samuel 14–15","Obedience"],
+  [81,"David Anointed","1 Samuel 16–17","Anointed"],
+  [82,"David & Goliath","1 Samuel 17–18","Giant"],
+  [83,"David Flees Saul","1 Samuel 19–22","Fugitive"],
+  [84,"David in the Wilderness","1 Samuel 23–26","Trust"],
+  [85,"Death of Saul","1 Samuel 27–31","End"],
+  [86,"David Mourns Saul","2 Samuel 1–3","Grief"],
+  [87,"David Becomes King","2 Samuel 4–7","Throne"],
+  [88,"David's Mighty Men","2 Samuel 8–10","Warriors"],
+  [89,"David & Bathsheba","2 Samuel 11–12","Failure"],
+  [90,"Absalom's Rebellion","2 Samuel 13–18","Betrayal"],
+  [91,"David Restored","2 Samuel 19–21","Return"],
+  [92,"David's Songs & Heroes","2 Samuel 22–24","Songs"],
+  [93,"Psalms 1–10","Psalm 1–10","Praise"],
+  [94,"Psalms 11–20","Psalm 11–20","Trust"],
+  [95,"Psalms 21–30","Psalm 21–30","Worship"],
+  [96,"Psalms 31–41","Psalm 31–41","Refuge"],
+  [97,"Psalms 42–50","Psalm 42–50","Longing"],
+  [98,"Psalms 51–65","Psalm 51–65","Mercy"],
+  [99,"Psalms 66–80","Psalm 66–80","Salvation"],
+  [100,"Psalms 81–100","Psalm 81–100","Glory"],
+  [101,"Solomon Becomes King","1 Kings 1–3","Wisdom"],
+  [102,"Temple of Solomon","1 Kings 4–7","Temple"],
+  [103,"Temple Dedicated","1 Kings 8–9","Dedication"],
+  [104,"Solomon's Wisdom","1 Kings 10–11","Gold"],
+  [105,"Kingdom Divided","1 Kings 12–14","Divided"],
+  [106,"Elijah Appears","1 Kings 15–17","Prophet"],
+  [107,"Mt. Carmel Showdown","1 Kings 18–19","Fire"],
+  [108,"Ahab & Jezebel","1 Kings 20–22","Evil"],
+  [109,"Elijah Taken Up","2 Kings 1–3","Chariot"],
+  [110,"Elisha's Miracles","2 Kings 4–7","Miracles"],
+  [111,"Israel Falls","2 Kings 8–13","Decline"],
+  [112,"Hezekiah Prays","2 Kings 14–20","Prayer"],
+  [113,"Jerusalem Falls","2 Kings 21–25","Exile"],
+  [114,"Proverbs 1–9","Proverbs 1–9","Wisdom"],
+  [115,"Proverbs 10–22","Proverbs 10–22","Life"],
+  [116,"Proverbs 23–31","Proverbs 23–31","Honor"],
+  [117,"Ecclesiastes","Ecclesiastes 1–12","Meaning"],
+  [118,"Song of Solomon","Song of Songs 1–8","Love"],
+  [119,"Isaiah's Vision","Isaiah 1–6","Holy"],
+  [120,"Isaiah's Prophecies","Isaiah 7–12","Immanuel"],
+  [125,"Woe to the Nations","Isaiah 13–23","Judgment"],
+  [130,"Comfort My People","Isaiah 40–42","Comfort"],
+  [135,"Suffering Servant","Isaiah 52–53","Messiah"],
+  [140,"Jeremiah's Call","Jeremiah 1–3","Weeping"],
+  [150,"New Covenant","Jeremiah 31–33","Promise"],
+  [155,"Lamentations","Lamentations 1–5","Grief"],
+  [160,"Ezekiel's Vision","Ezekiel 1–3","Wheels"],
+  [165,"Valley of Dry Bones","Ezekiel 37–39","Resurrection"],
+  [170,"Daniel in Babylon","Daniel 1–3","Faithful"],
+  [175,"Daniel's Visions","Daniel 4–6","Lions"],
+  [180,"Hosea's Love","Hosea 1–6","Love"],
+  [185,"Joel's Vision","Joel 1–3","Spirit"],
+  [190,"Amos Speaks Justice","Amos 1–9","Justice"],
+  [195,"Jonah & the Whale","Jonah 1–4","Grace"],
+  [200,"Micah's Promise","Micah 1–7","Bethlehem"],
+  [205,"Minor Prophets","Nahum · Habakkuk · Zephaniah","Prophets"],
+  [210,"Return from Exile","Ezra 1–3","Restoration"],
+  [215,"Temple Rebuilt","Ezra 4–6 / Haggai","Rebuild"],
+  [220,"Nehemiah Builds Walls","Nehemiah 1–4","Walls"],
+  [225,"Esther Saves Israel","Esther 1–10","Courage"],
+  [230,"Job's Suffering","Job 1–14","Suffering"],
+  [235,"God Answers Job","Job 38–42","Sovereign"],
+  [240,"Psalms 101–120","Psalm 101–120","Ascent"],
+  [245,"Psalms 121–150","Psalm 121–150","Hallelujah"],
+  [250,"Malachi — Last Prophet","Malachi 1–4","Prepare"],
+  [255,"Birth of Jesus","Matthew 1–2 / Luke 1–2","Incarnation"],
+  [260,"Baptism & Temptation","Matthew 3–4 / Luke 3–4","Tested"],
+  [265,"Sermon on the Mount","Matthew 5–7","Kingdom"],
+  [270,"Jesus' Miracles","Matthew 8–12","Signs"],
+  [275,"Parables of the Kingdom","Matthew 13–15","Parables"],
+  [280,"Who Is Jesus?","Matthew 16–18 / Mark 8","Messiah"],
+  [285,"Triumphal Entry","Matthew 21–23","Hosanna"],
+  [290,"Olivet Discourse","Matthew 24–25","End Times"],
+  [295,"The Last Supper","John 13–15","Love"],
+  [300,"Gethsemane & Trial","John 16–18","Betrayal"],
+  [305,"The Crucifixion","John 19","Cross"],
+  [310,"The Resurrection","John 20–21","Risen"],
+  [315,"Road to Emmaus","Luke 24 / Acts 1","Risen"],
+  [320,"Pentecost","Acts 2–4","Spirit"],
+  [325,"Stephen's Martyrdom","Acts 5–8","Martyr"],
+  [330,"Paul's Conversion","Acts 9–12","Damascus"],
+  [335,"Paul's Journeys","Acts 13–18","Mission"],
+  [340,"Paul to Rome","Acts 19–28","Rome"],
+  [345,"Romans — Gospel Power","Romans 1–8","Gospel"],
+  [350,"Love Never Fails","Romans 9–16","Love"],
+  [353,"Galatians — Freedom","Galatians 1–6","Free"],
+  [355,"Armor of God","Ephesians 1–6","Armor"],
+  [357,"Philippians — Joy","Philippians / Colossians","Joy"],
+  [359,"Hebrews — High Priest","Hebrews 1–13","Priest"],
+  [361,"Letters of Peter & John","1–2 Peter / 1–3 John","Love"],
+  [363,"Contend for the Faith","James / Jude","Faith"],
+  [365,"A New Heaven & Earth","Revelation 20–22","Eternity"],
+];
+
+const planMap = {};
+PLAN_RAW.forEach(([day,title,books,tag]) => { planMap[day] = {day,title,books,tag}; });
+for(let i=1;i<=365;i++){
+  if(!planMap[i]){
+    const keys = Object.keys(planMap).map(Number).filter(k=>k<=i).sort((a,b)=>b-a);
+    planMap[i] = { ...planMap[keys[0]], day:i };
+  }
+}
+
+// BIBLE CONTENT
+const GENESIS_1_2 = `<div class="chapter-head">Genesis 1 — The Creation</div>
+<p class="verse-line"><span class="verse-num">1</span>In the beginning God created the heavens and the earth.</p>
+<p class="verse-line"><span class="verse-num">2</span>Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters.</p>
+<p class="verse-line"><span class="verse-num">3</span>And God said, "Let there be light," and there was light.</p>
+<p class="verse-line"><span class="verse-num">4</span>God saw that the light was good, and he separated the light from the darkness.</p>
+<p class="verse-line"><span class="verse-num">5</span>God called the light "day," and the darkness he called "night." And there was evening, and there was morning — the first day.</p>
+<p class="verse-line"><span class="verse-num">6</span>And God said, "Let there be a vault between the waters to separate water from water."</p>
+<p class="verse-line"><span class="verse-num">7</span>So God made the vault and separated the water under the vault from the water above it. And it was so.</p>
+<p class="verse-line"><span class="verse-num">8</span>God called the vault "sky." And there was evening, and there was morning — the second day.</p>
+<p class="verse-line"><span class="verse-num">9</span>And God said, "Let the water under the sky be gathered to one place, and let dry ground appear." And it was so.</p>
+<p class="verse-line"><span class="verse-num">10</span>God called the dry ground "land," and the gathered waters he called "seas." And God saw that it was good.</p>
+<p class="verse-line"><span class="verse-num">11</span>Then God said, "Let the land produce vegetation: seed-bearing plants and trees on the land that bear fruit with seed in it, according to their various kinds." And it was so.</p>
+<p class="verse-line"><span class="verse-num">14</span>And God said, "Let there be lights in the vault of the sky to separate the day from the night, and let them serve as signs to mark sacred times, and days and years."</p>
+<p class="verse-line"><span class="verse-num">20</span>And God said, "Let the water teem with living creatures, and let birds fly above the earth across the vault of the sky."</p>
+<p class="verse-line"><span class="verse-num">24</span>And God said, "Let the land produce living creatures according to their kinds: the livestock, the creatures that move along the ground, and the wild animals, each according to its kind." And it was so.</p>
+<p class="verse-line"><span class="verse-num">26</span>Then God said, "Let us make mankind in our image, in our likeness, so that they may rule over the fish in the sea and the birds in the sky, over the livestock and all the wild animals, and over all the creatures that move along the ground."</p>
+<p class="verse-line"><span class="verse-num">27</span>So God created mankind in his own image, in the image of God he created them; male and female he created them.</p>
+<p class="verse-line"><span class="verse-num">28</span>God blessed them and said to them, "Be fruitful and increase in number; fill the earth and subdue it. Rule over the fish in the sea and the birds in the sky and over every living creature that moves on the ground."</p>
+<p class="verse-line"><span class="verse-num">31</span>God saw all that he had made, and it was very good. And there was evening, and there was morning — the sixth day.</p>
+<div class="chapter-head">Genesis 2 — The Garden of Eden</div>
+<p class="verse-line"><span class="verse-num">1</span>Thus the heavens and the earth were completed in all their vast array.</p>
+<p class="verse-line"><span class="verse-num">2</span>By the seventh day God had finished the work he had been doing; so on the seventh day he rested from all his work.</p>
+<p class="verse-line"><span class="verse-num">3</span>Then God blessed the seventh day and made it holy, because on it he rested from all the work of creating that he had done.</p>
+<p class="verse-line"><span class="verse-num">7</span>Then the Lord God formed a man from the dust of the ground and breathed into his nostrils the breath of life, and the man became a living being.</p>
+<p class="verse-line"><span class="verse-num">8</span>Now the Lord God had planted a garden in the east, in Eden; and there he put the man he had formed.</p>
+<p class="verse-line"><span class="verse-num">15</span>The Lord God took the man and put him in the Garden of Eden to work it and take care of it.</p>
+<p class="verse-line"><span class="verse-num">18</span>The Lord God said, "It is not good for the man to be alone. I will make a helper suitable for him."</p>
+<p class="verse-line"><span class="verse-num">22</span>Then the Lord God made a woman from the rib he had taken out of the man, and he brought her to the man.</p>
+<p class="verse-line"><span class="verse-num">23</span>The man said, "This is now bone of my bones and flesh of my flesh; she shall be called 'woman,' for she was taken out of man."</p>
+<p class="verse-line"><span class="verse-num">24</span>That is why a man leaves his father and mother and is united to his wife, and they become one flesh.</p>`;
+
+function getContent(day) {
+  if(day===1) return GENESIS_1_2;
+  const d = planMap[day];
+  return `<div class="chapter-head">${d.books} — ${d.title}</div>
+<p class="verse-line" style="font-style:italic;color:var(--text-muted);font-size:calc(var(--font-size) * 0.9);">
+  Open your Bible to <strong style="color:var(--gold-light);">${d.books}</strong> and follow along. 
+  This chronological plan brings you through all 66 books of the Bible in the order events occurred in history —
+  so Scripture comes alive as one unfolding story of God's redemption.
+</p>
+<p class="verse-line" style="margin-top:18px;">
+  <span class="verse-num">✦</span>
+  <em>"All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the servant of God may be thoroughly equipped for every good work."</em>
+</p>
+<p class="verse-line" style="margin-top:6px;padding-left:20px;color:var(--text-muted);font-size:calc(var(--font-size)*0.82);">— 2 Timothy 3:16–17</p>
+<p class="verse-line" style="margin-top:18px;">
+  <span class="verse-num">✦</span>
+  Press <strong style="color:var(--gold);">Play</strong> above to have today's reading narrated aloud.
+  Select a voice from the narrator options to find your preferred reading experience.
+</p>
+<p class="verse-line" style="margin-top:12px;">
+  <span class="verse-num">✦</span>
+  When you've finished today's reading, press <strong style="color:var(--gold);">Complete ✓</strong> to track your progress through the year.
+</p>`;
+}
+
+// STATE
+let currentDay = parseInt(localStorage.getItem('bibleDay')||'1');
+let completedDays = JSON.parse(localStorage.getItem('completedDays')||'[]');
+let fontSize = parseInt(localStorage.getItem('fontSize')||'18');
+let speed = 1;
+let autoAdvance = false;
+let isPlaying = false;
+let utterance = null;
+let allVoices = [];
+let selectedVoice = null;
+let readingText = '';
+let elapsed = 0;
+let totalEstimate = 0;
+let audioTimer = null;
+
+// INIT — robust for iOS standalone PWA mode
+function initApp(){
+  applyFontSize();
+  populateDaySelect();
+  populatePlanGrid();
+  loadReading();
+
+  // iOS needs extra time to load voices in standalone mode
+  let voiceAttempts = 0;
+  const tryVoices = () => {
+    allVoices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+    if(allVoices.length){
+      buildVoiceChips();
+    } else if(voiceAttempts < 20){
+      voiceAttempts++;
+      setTimeout(tryVoices, 500);
+    }
+  };
+  speechSynthesis.onvoiceschanged = tryVoices;
+  setTimeout(tryVoices, 100);
+}
+
+// Fire on both load and DOMContentLoaded for PWA reliability
+if(document.readyState === 'complete'){
+  initApp();
+} else {
+  window.addEventListener('load', initApp);
+  document.addEventListener('DOMContentLoaded', ()=>{
+    setTimeout(initApp, 200);
+  });
+}
+
+function switchTab(name){
+  ['today','plan','settings'].forEach((n,i)=>{
+    document.getElementById('tab-'+n).classList.toggle('active',n===name);
+    document.querySelectorAll('.tab')[i].classList.toggle('active',n===name);
+  });
+}
+
+function populateDaySelect(){
+  const sel = document.getElementById('daySelect');
+  sel.innerHTML='';
+  for(let i=1;i<=365;i++){
+    const o=document.createElement('option');
+    o.value=i; o.textContent=`Day ${i}  ${planMap[i].books}`;
+    if(i===currentDay) o.selected=true;
+    sel.appendChild(o);
+  }
+}
+
+function jumpToDay(){ currentDay=parseInt(document.getElementById('daySelect').value); loadReading(); switchTab('today'); }
+function prevDay(){ if(currentDay>1){currentDay--; syncDay(); loadReading();} }
+function nextDay(){ if(currentDay<365){currentDay++; syncDay(); loadReading();} }
+function syncDay(){ document.getElementById('daySelect').value=currentDay; }
+
+function markComplete(){
+  if(!completedDays.includes(currentDay)) completedDays.push(currentDay);
+  localStorage.setItem('completedDays',JSON.stringify(completedDays));
+  localStorage.setItem('bibleDay',currentDay);
+  updateProgress(); populatePlanGrid();
+  const btn=document.getElementById('completeBtn');
+  const orig=btn.textContent; btn.textContent='✓ Saved!';
+  btn.style.cssText='background:linear-gradient(135deg,#2a5c3a,#3d9e56)!important;color:#fff!important;';
+  setTimeout(()=>{btn.textContent=orig;btn.style.cssText='';},2000);
+}
+
+function updateProgress(){
+  const pct=Math.round((completedDays.length/365)*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progText').textContent=`Day ${currentDay} of 365 · ${completedDays.length} days complete · ${pct}%`;
+  document.getElementById('dayDisplay').textContent=currentDay;
+}
+
+function loadReading(){
+  stopAudio();
+  const d=planMap[currentDay];
+  document.getElementById('readingTitle').textContent=d.title;
+  document.getElementById('readingMeta').textContent=d.books+' . '+d.tag;
+  document.getElementById('readingTag').textContent='Day '+currentDay;
+  const html=getContent(currentDay);
+  document.getElementById('scriptureScroll').innerHTML=html;
+  document.getElementById('scriptureScroll').scrollTop=0;
+
+  // Build narration text with chapter heading pauses and no dashes
+  const tmp=document.createElement('div');
+  tmp.innerHTML=html;
+
+  // Give chapter headings a spoken title followed by a pause placeholder
+  tmp.querySelectorAll('.chapter-head').forEach(el=>{
+    const clean = el.innerText.replace(/[✦•\-\u2013\u2014]/g,'').trim();
+    el.innerText = clean + '. PAUSE. ';
+  });
+
+  let raw = tmp.innerText;
+  raw = raw.replace(/\u2013|\u2014/g, ' ');  // en dash, em dash
+  raw = raw.replace(/\s*-\s*/g, ' ');         // hyphens as dashes
+  raw = raw.replace(/✦/g, '');
+  raw = raw.replace(/·/g, '.');
+  raw = raw.replace(/\s+/g,' ').trim();
+
+  readingText = raw;
+  const words=readingText.split(' ').length;
+  totalEstimate=Math.round((words/130)*60/speed);
+  elapsed=0; updateAudioUI();
+  localStorage.setItem('bibleDay',currentDay);
+  updateProgress();
+}
+
+function changeFontSize(d){
+  fontSize=Math.min(32,Math.max(12,fontSize+d));
+  applyFontSize();
+}
+function applyFontSize(){
+  document.documentElement.style.setProperty('--font-size',fontSize+'px');
+  document.getElementById('fontSizeDisp').textContent=fontSize;
+  const d2=document.getElementById('fontSizeDisp2');
+  if(d2) d2.textContent=fontSize+'px';
+  localStorage.setItem('fontSize',fontSize);
+}
+
+// ═══════════════════════════════════════
+// VOICE SYSTEM — Multi-category, multi-option
+// ═══════════════════════════════════════
+
+// Each category has ordered hint arrays — first match wins
+// Hints are checked against voice name + lang (lowercased)
+const VOICE_CATEGORIES = [
+  {
+    category: '🎙️ Deep Male',
+    description: 'Rich, authoritative narrator',
+    voices: [
+      { label:'James',    hints:['james'] },
+      { label:'David',    hints:['david'] },
+      { label:'Daniel',   hints:['daniel','en-gb'] },
+      { label:'Arthur',   hints:['arthur'] },
+      { label:'George',   hints:['george'] },
+      { label:'Paul',     hints:['paul'] },
+      { label:'Mark',     hints:['mark'] },
+      { label:'Thomas',   hints:['thomas','tom'] },
+      { label:'Fred',     hints:['fred'] },
+      { label:'Alex',     hints:['alex','en-us'] },
+      { label:'William',  hints:['william','will'] },
+      { label:'Richard',  hints:['richard'] },
+      { label:'Matthew',  hints:['matthew'] },
+      { label:'Aaron',    hints:['aaron'] },
+      { label:'Gordon',   hints:['gordon'] },
+    ]
+  },
+  {
+    category: '🇬🇧 UK / British',
+    description: 'Formal British accent',
+    voices: [
+      { label:'Daniel',   hints:['daniel','en-gb'] },
+      { label:'Oliver',   hints:['oliver'] },
+      { label:'Gordon',   hints:['gordon'] },
+      { label:'Arthur',   hints:['arthur'] },
+      { label:'Harry',    hints:['harry'] },
+      { label:'Malcolm',  hints:['malcolm'] },
+      { label:'Serena',   hints:['serena'] },
+      { label:'Kate',     hints:['kate'] },
+      { label:'Moira',    hints:['moira'] },
+      { label:'Tessa',    hints:['tessa'] },
+      { label:'Martha',   hints:['martha'] },
+      { label:'Emily',    hints:['emily'] },
+    ]
+  },
+  {
+    category: '🇺🇸 US Male',
+    description: 'American male voice',
+    voices: [
+      { label:'Alex',     hints:['alex'] },
+      { label:'Fred',     hints:['fred'] },
+      { label:'Tom',      hints:['tom'] },
+      { label:'Junior',   hints:['junior'] },
+      { label:'Ralph',    hints:['ralph'] },
+      { label:'Bruce',    hints:['bruce'] },
+      { label:'Bobby',    hints:['bobby'] },
+      { label:'Albert',   hints:['albert'] },
+      { label:'Bad News', hints:['bad news'] },
+      { label:'Bahh',     hints:['bahh'] },
+      { label:'Bubbles',  hints:['bubbles'] },
+      { label:'Cellos',   hints:['cellos'] },
+    ]
+  },
+  {
+    category: '👩 US Female',
+    description: 'Warm American female voice',
+    voices: [
+      { label:'Samantha', hints:['samantha'] },
+      { label:'Susan',    hints:['susan'] },
+      { label:'Jennifer', hints:['jennifer'] },
+      { label:'Lisa',     hints:['lisa'] },
+      { label:'Karen',    hints:['karen'] },
+      { label:'Kathy',    hints:['kathy'] },
+      { label:'Vicki',    hints:['vicki'] },
+      { label:'Victoria', hints:['victoria'] },
+      { label:'Allison',  hints:['allison'] },
+      { label:'Ava',      hints:['ava'] },
+      { label:'Nova',     hints:['nova'] },
+      { label:'Aria',     hints:['aria'] },
+      { label:'Ivy',      hints:['ivy'] },
+    ]
+  },
+  {
+    category: '🌸 UK Female',
+    description: 'Elegant British female voice',
+    voices: [
+      { label:'Alice',    hints:['alice'] },
+      { label:'Fiona',    hints:['fiona'] },
+      { label:'Kate',     hints:['kate'] },
+      { label:'Serena',   hints:['serena'] },
+      { label:'Martha',   hints:['martha'] },
+      { label:'Tessa',    hints:['tessa'] },
+      { label:'Moira',    hints:['moira'] },
+      { label:'Emily',    hints:['emily'] },
+      { label:'Charlotte',hints:['charlotte'] },
+      { label:'Emma',     hints:['emma'] },
+      { label:'Grace',    hints:['grace'] },
+    ]
+  },
+  {
+    category: '🌍 World English',
+    description: 'Australian, Indian & global accents',
+    voices: [
+      { label:'Karen AU',  hints:['karen','en-au'] },
+      { label:'Lee AU',    hints:['lee'] },
+      { label:'Veena IN',  hints:['veena'] },
+      { label:'Rishi IN',  hints:['rishi'] },
+      { label:'Sangeeta',  hints:['sangeeta'] },
+      { label:'Nicky',     hints:['nicky'] },
+      { label:'Aaron',     hints:['aaron'] },
+      { label:'Yannick',   hints:['yannick'] },
+      { label:'Luca',      hints:['luca'] },
+      { label:'Reed',      hints:['reed'] },
+      { label:'Rocko',     hints:['rocko'] },
+      { label:'Sandy',     hints:['sandy'] },
+      { label:'Shelley',   hints:['shelley'] },
+    ]
+  },
+  {
+    category: '🧘 Calm & Meditative',
+    description: 'Gentle, peaceful narration',
+    voices: [
+      { label:'Nora',     hints:['nora'] },
+      { label:'Nova',     hints:['nova'] },
+      { label:'Aria',     hints:['aria'] },
+      { label:'Ivy',      hints:['ivy'] },
+      { label:'Joanna',   hints:['joanna'] },
+      { label:'Salli',    hints:['salli'] },
+      { label:'Kendra',   hints:['kendra'] },
+      { label:'Kimberly', hints:['kimberly'] },
+      { label:'Ruth',     hints:['ruth'] },
+      { label:'Lupe',     hints:['lupe'] },
+      { label:'Penelope', hints:['penelope'] },
+      { label:'Mia',      hints:['mia'] },
+    ]
+  },
+];
+
+// Track expanded state per category
+const expandedCats = new Set();
+
+function buildVoiceChips(){
+  allVoices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+  const container = document.getElementById('voiceChips');
+  container.innerHTML = '';
+
+  if(!allVoices.length){
+    container.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px;font-style:italic;">No voices found. Enable Text-to-Speech in your device settings and reload.</div>';
+    return;
+  }
+
+  let firstVoiceSet = false;
+
+  VOICE_CATEGORIES.forEach((cat, catIdx) => {
+    // Find all matching voices for this category
+    const matched = [];
+    const usedNames = new Set();
+
+    cat.voices.forEach(vDef => {
+      const found = allVoices.find(v => {
+        const key = v.name.toLowerCase() + ' ' + v.lang.toLowerCase();
+        return vDef.hints.some(h => key.includes(h)) && !usedNames.has(v.name);
+      });
+      if(found){
+        usedNames.add(found.name);
+        matched.push({ label: vDef.label, voice: found });
+      }
+    });
+
+    // Also add any unmatched English voices to first category as fallback
+    if(catIdx === 0 && matched.length === 0){
+      allVoices.slice(0,3).forEach(v => matched.push({ label: v.name.split(' ')[0], voice: v }));
+    }
+
+    if(matched.length === 0) return;
+
+    // ── Category block ──
+    const block = document.createElement('div');
+    block.style.cssText = 'width:100%;margin-bottom:10px;';
+
+    // Category header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      font-family:var(--font-display); font-size:9px; letter-spacing:2px;
+      color:var(--gold); text-transform:uppercase; margin-bottom:6px;
+      display:flex; align-items:center; justify-content:space-between;
+      cursor:pointer; padding:4px 0; border-bottom:1px solid rgba(201,168,76,0.1);
+    `;
+    header.innerHTML = `
+      <span>${cat.category} <span style="color:var(--text-muted);font-size:8px;letter-spacing:1px;text-transform:none;font-family:var(--font-body);">${cat.description}</span></span>
+      <span class="cat-toggle-${catIdx}" style="color:var(--text-muted);font-size:10px;">${matched.length > 3 ? '+ more' : ''}</span>
+    `;
+
+    // Chips row
+    const chipsRow = document.createElement('div');
+    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+    chipsRow.id = `cat-row-${catIdx}`;
+
+    const SHOW_INITIAL = 4; // show first 4, rest hidden until expanded
+
+    matched.forEach((item, i) => {
+      const chip = document.createElement('button');
+      const isFirst = !firstVoiceSet && i === 0;
+      chip.className = 'voice-chip' + (isFirst ? ' on' : '');
+      chip.dataset.catIdx = catIdx;
+      chip.dataset.voiceName = item.voice.name;
+      chip.textContent = item.label;
+      chip.title = item.voice.name + ' · ' + item.voice.lang;
+
+      if(i >= SHOW_INITIAL && !expandedCats.has(catIdx)){
+        chip.style.display = 'none';
+      }
+
+      chip.onclick = () => {
+        selectedVoice = item.voice;
+        document.querySelectorAll('.voice-chip').forEach(c => c.classList.remove('on'));
+        chip.classList.add('on');
+        document.getElementById('voiceAvatar').textContent = cat.category.split(' ')[0];
+        document.getElementById('voiceNameDisp').textContent = item.voice.name;
+        document.getElementById('voiceSubDisp').textContent = item.voice.lang + ' · ' + cat.category.replace(/[^\w\s]/gi,'').trim();
+        if(isPlaying){ stopAudio(); startAudio(); }
+      };
+
+      chipsRow.appendChild(chip);
+
+      if(isFirst){
+        firstVoiceSet = true;
+        selectedVoice = item.voice;
+        document.getElementById('voiceAvatar').textContent = cat.category.split(' ')[0];
+        document.getElementById('voiceNameDisp').textContent = item.voice.name;
+        document.getElementById('voiceSubDisp').textContent = item.voice.lang + ' · ' + cat.category.replace(/[^\w\s]/gi,'').trim();
+      }
+    });
+
+    // "Show more / less" toggle if more than SHOW_INITIAL
+    if(matched.length > SHOW_INITIAL){
+      const toggle = document.createElement('button');
+      toggle.className = 'ctrl-btn';
+      toggle.style.cssText = 'font-size:9px;padding:4px 10px;letter-spacing:1px;';
+      toggle.textContent = '+ ' + (matched.length - SHOW_INITIAL) + ' more';
+      toggle.onclick = () => {
+        const expanded = expandedCats.has(catIdx);
+        if(expanded){
+          expandedCats.delete(catIdx);
+          toggle.textContent = '+ ' + (matched.length - SHOW_INITIAL) + ' more';
+        } else {
+          expandedCats.add(catIdx);
+          toggle.textContent = '− less';
+        }
+        // Show/hide chips beyond SHOW_INITIAL
+        Array.from(chipsRow.querySelectorAll('.voice-chip')).forEach((c,i) => {
+          if(i >= SHOW_INITIAL) c.style.display = expandedCats.has(catIdx) ? 'flex' : 'none';
+        });
+      };
+      chipsRow.appendChild(toggle);
+    }
+
+    block.appendChild(header);
+    block.appendChild(chipsRow);
+    container.appendChild(block);
+  });
+}
+
+// AUDIO — sentence-by-sentence with natural pauses
+let sentences = [];
+let sentenceIndex = 0;
+let pauseTimeout = null;
+
+// Pause duration in ms after each sentence based on speed
+function getPauseDuration(){
+  if(speed<=0.5)  return 1100;
+  if(speed<=0.75) return 850;
+  if(speed<=0.9)  return 600;
+  if(speed<=1.0)  return 420;
+  if(speed<=1.1)  return 300;
+  return 180;
+}
+
+function splitSentences(text){
+  // Split on . ! ? followed by whitespace or end
+  const raw = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
+  return raw.map(s => s.trim()).filter(s => s.length > 2);
+}
+
+// How long to pause after each sentence (ms)
+function getPauseDuration(sentence){
+  // Extra long pause after chapter headings
+  if(sentence && sentence.toUpperCase().includes('PAUSE')) return 2200;
+  if(speed<=0.5)  return 1200;
+  if(speed<=0.75) return 900;
+  if(speed<=0.9)  return 650;
+  if(speed<=1.0)  return 450;
+  if(speed<=1.1)  return 320;
+  return 200;
+}
+
+function togglePlay(){ isPlaying?pauseAudio():startAudio(); }
+
+function startAudio(){
+  speechSynthesis.cancel();
+  clearTimeout(pauseTimeout);
+  if(sentenceIndex===0 || sentenceIndex>=sentences.length){
+    sentences = splitSentences(readingText);
+    sentenceIndex = 0;
+  }
+  isPlaying=true;
+  document.getElementById('playBtn').textContent='⏸';
+  startTimer();
+  speakNextSentence();
+}
+
+function speakNextSentence(){
+  if(!isPlaying) return;
+  if(sentenceIndex>=sentences.length){
+    isPlaying=false;
+    sentenceIndex=0;
+    document.getElementById('playBtn').textContent='▶';
+    clearInterval(audioTimer);
+    if(autoAdvance&&currentDay<365){setTimeout(()=>{nextDay();startAudio();},1800);}
+    return;
+  }
+
+  let text = sentences[sentenceIndex].trim();
+
+  // If this is a PAUSE marker sentence, just wait silently then continue
+  if(text.toUpperCase().replace(/[^A-Z]/g,'') === 'PAUSE'){
+    sentenceIndex++;
+    pauseTimeout = setTimeout(speakNextSentence, 2000);
+    return;
+  }
+
+  // Strip the word PAUSE if it sneaked into a real sentence
+  text = text.replace(/\bPAUSE\b\.?/gi, '').trim();
+
+  // Skip empty or symbol-only sentences
+  if(!text || text.replace(/[^a-zA-Z0-9]/g,'').length < 2){
+    sentenceIndex++;
+    speakNextSentence();
+    return;
+  }
+
+  utterance = new SpeechSynthesisUtterance(text);
+  if(selectedVoice) utterance.voice=selectedVoice;
+  utterance.rate=speed;
+  utterance.pitch=0.85;
+  utterance.volume=1;
+
+  utterance.onend=()=>{
+    if(!isPlaying) return;
+    sentenceIndex++;
+    pauseTimeout = setTimeout(speakNextSentence, getPauseDuration(text));
+  };
+  utterance.onerror=()=>{
+    if(!isPlaying) return;
+    sentenceIndex++;
+    pauseTimeout = setTimeout(speakNextSentence, getPauseDuration(text));
+  };
+  speechSynthesis.speak(utterance);
+}
+
+function pauseAudio(){
+  speechSynthesis.cancel();
+  clearTimeout(pauseTimeout);
+  isPlaying=false;
+  document.getElementById('playBtn').textContent='▶';
+  clearInterval(audioTimer);
+  // Don't reset sentenceIndex so resume picks up roughly where it left off
+  if(sentenceIndex>0) sentenceIndex = Math.max(0, sentenceIndex-1);
+}
+
+function stopAudio(){
+  speechSynthesis.cancel();
+  clearTimeout(pauseTimeout);
+  isPlaying=false; elapsed=0; sentenceIndex=0;
+  document.getElementById('playBtn').textContent='▶';
+  clearInterval(audioTimer); updateAudioUI();
+}
+
+function rewindAudio(){
+  speechSynthesis.cancel();
+  clearTimeout(pauseTimeout);
+  isPlaying=false; elapsed=0; sentenceIndex=0;
+  document.getElementById('playBtn').textContent='▶';
+  clearInterval(audioTimer); updateAudioUI();
+}
+
+function startTimer(){
+  clearInterval(audioTimer);
+  const start=Date.now()-(elapsed*1000);
+  audioTimer=setInterval(()=>{
+    elapsed=(Date.now()-start)/1000;
+    updateAudioUI();
+  },400);
+}
+
+function updateAudioUI(){
+  const pct=totalEstimate>0?Math.min((elapsed/totalEstimate)*100,100):0;
+  document.getElementById('audioFill').style.width=pct+'%';
+  document.getElementById('audioPos').textContent=fmtTime(elapsed);
+  document.getElementById('audioDur').textContent=fmtTime(totalEstimate);
+}
+
+function fmtTime(s){
+  if(!s||isNaN(s)) return '0:00';
+  return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+}
+
+function seekAudio(e){
+  const pct=e.offsetX/e.currentTarget.offsetWidth;
+  elapsed=pct*totalEstimate; updateAudioUI();
+}
+
+function cycleSpeed(){
+  const arr=[0.5,0.75,0.9,1,1.1,1.25,1.5];
+  const labels={'0.5':'0.5x Slowest','0.75':'0.75x Slow','0.9':'0.9x Relaxed','1':'1x Normal','1.1':'1.1x Brisk','1.25':'1.25x Quick','1.5':'1.5x Fast'};
+  speed=arr[(arr.indexOf(speed)+1)%arr.length];
+  document.getElementById('speedBtn').textContent=labels[speed]||speed+'×';
+  totalEstimate=Math.round((readingText.split(' ').length/130)*60/speed);
+  if(isPlaying){stopAudio();startAudio();}
+}
+
+function toggleAutoAdvance(){
+  autoAdvance=!autoAdvance;
+  const btn=document.getElementById('autoBtn');
+  btn.textContent='Auto: '+(autoAdvance?'ON':'OFF');
+  btn.classList.toggle('on',autoAdvance);
+}
+
+function applyDefaultSpeed(){
+  speed=parseFloat(document.getElementById('defaultSpeedSetting').value);
+  document.getElementById('speedBtn').textContent=speed+'× Speed';
+}
+
+function populatePlanGrid(){
+  const grid=document.getElementById('planGrid');
+  grid.innerHTML='';
+  for(let w=0;w<52;w++){
+    const s=w*7+1, e=Math.min(s+6,365);
+    const d=planMap[s];
+    const active=currentDay>=s&&currentDay<=e;
+    const done=completedDays.some(c=>c>=s&&c<=e);
+    const el=document.createElement('div');
+    el.className='plan-item'+(active?' active':'')+(done?' done':'');
+    el.innerHTML=`<div class="plan-wk">Week ${w+1}</div><div class="plan-books">${d.books.split('–')[0].split('/')[0].trim()}</div><div class="plan-days">Days ${s}–${e}</div>`;
+    el.onclick=()=>{ currentDay=s; syncDay(); loadReading(); updateProgress(); switchTab('today'); };
+    grid.appendChild(el);
+  }
+}
+
+function resetProgress(){
+  if(!confirm('Reset all reading progress? This cannot be undone.')) return;
+  completedDays=[]; currentDay=1;
+  localStorage.removeItem('completedDays'); localStorage.setItem('bibleDay','1');
+  syncDay(); loadReading(); updateProgress(); populatePlanGrid();
+}
+
+function exportProgress(){
+  const data={currentDay,completedDays,percent:Math.round((completedDays.length/365)*100),exportDate:new Date().toLocaleDateString()};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='bible-progress.json'; a.click();
+}
+
+// ElevenLabs removed — using device voices
+
+// ═══════════════════════════════════════
+// PWA SETUP — Home Screen App
+// ═══════════════════════════════════════
+
+// Inject Web App Manifest dynamically
+const manifest = {
+  name: "The Word 365",
+  short_name: "The Word",
+  description: "Read the entire Bible in one year with audio narration",
+  start_url: "/",
+  display: "standalone",
+  background_color: "#0D1B2A",
+  theme_color: "#0D1B2A",
+  orientation: "portrait",
+  icons: [
+    {
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230D1B2A'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%23C9A84C' stroke-width='8'/%3E%3Ctext x='256' y='200' font-family='serif' font-size='80' fill='%23C9A84C' text-anchor='middle'%3E%E2%9C%A6%3C/text%3E%3Ctext x='256' y='290' font-family='serif' font-size='52' font-weight='bold' fill='%23E8D08A' text-anchor='middle'%3ETHE%3C/text%3E%3Ctext x='256' y='350' font-family='serif' font-size='36' fill='%23F5F0E8' text-anchor='middle'%3EWORD 365%3C/text%3E%3C/svg%3E",
+      sizes: "512x512",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+const manifestUrl = URL.createObjectURL(manifestBlob);
+document.getElementById('pwa-manifest').setAttribute('href', manifestUrl);
+
+// Register Service Worker for offline use
+if('serviceWorker' in navigator){
+  const swCode = `
+    const CACHE = 'theword365-v1';
+    const ASSETS = ['/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+// Show "Add to Home Screen" prompt banner
+window.addEventListener('load', ()=>{
+  // Only show on mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const dismissed = localStorage.getItem('pwaPromptDismissed');
+
+  if(isMobile && !isStandalone && !dismissed){
+    setTimeout(()=>{
+      const banner = document.createElement('div');
+      banner.id = 'pwaBanner';
+      banner.style.cssText = `
+        position:fixed; bottom:0; left:0; right:0; z-index:9999;
+        background:linear-gradient(135deg,#162435,#0D1B2A);
+        border-top:1px solid rgba(201,168,76,0.4);
+        padding:16px 20px; display:flex; align-items:center; gap:12px;
+        box-shadow:0 -4px 24px rgba(0,0,0,0.4);
+        animation: slideUp 0.4s ease;
+      `;
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      banner.innerHTML = `
+        <div style="font-size:28px;">✦</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-display);font-size:11px;letter-spacing:2px;color:#C9A84C;text-transform:uppercase;margin-bottom:3px;">Add to Home Screen</div>
+          <div style="font-family:var(--font-serif);font-size:13px;color:#F0EAD6;line-height:1.4;">
+            ${isIOS
+              ? "Tap the Share button below then tap 'Add to Home Screen' to install The Word 365 as an app."
+              : "Tap the menu button in your browser then tap 'Add to Home Screen' to install The Word 365."}
+          </div>
+        </div>
+        <button onclick="document.getElementById('pwaBanner').remove();localStorage.setItem('pwaPromptDismissed','1');"
+          style="background:none;border:none;color:#A89060;font-size:20px;cursor:pointer;padding:4px;flex-shrink:0;">✕</button>
+      `;
+      document.body.appendChild(banner);
+    }, 3000);
+  }
+});
+
+
+
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("SW registered"))
+      .catch(err => console.log("SW error:", err));
+  });
+}
+</script>
+<script>
+(function() {
+  var U='https://fnlcwwqltqksowtlefpb.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyMTUxMTMsImV4cCI6MjA1OTc5MTExM30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw',VK='word_visitor_id';
+  var vid=localStorage.getItem(VK);
+  if(!vid){vid='V-'+Math.random().toString(36).substr(2,8).toUpperCase();localStorage.setItem(VK,vid);}
+  fetch(U+'/rest/v1/visits?visitor_id=eq.'+vid+'&select=id',{headers:{'apikey':K,'Authorization':'Bearer '+K}})
+  .then(r=>r.json()).then(data=>{
+    fetch(U+'/rest/v1/visits',{method:'POST',
+      headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({visitor_id:vid,visit_number:(data?data.length:0)+1})});
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>
