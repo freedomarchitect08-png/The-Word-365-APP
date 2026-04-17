@@ -1238,5 +1238,18 @@ window.addEventListener('load',()=>{
   },2400);
 });
 </script>
+<script>
+(function() {
+  var U='https://fnlcwwqltqksowtlefpb.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MzUxOTMsImV4cCI6MjA5MTUxMTE5M30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw',VK='word_pro_visitor_id';
+  var vid=localStorage.getItem(VK);
+  if(!vid){vid='PRO-'+Math.random().toString(36).substr(2,8).toUpperCase();localStorage.setItem(VK,vid);}
+  fetch(U+'/rest/v1/visits?visitor_id=eq.'+vid+'&select=id',{headers:{'apikey':K,'Authorization':'Bearer '+K}})
+  .then(r=>r.json()).then(data=>{
+    fetch(U+'/rest/v1/visits',{method:'POST',
+      headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({visitor_id:vid,visit_number:(data?data.length:0)+1,source:'pro'})});
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>
