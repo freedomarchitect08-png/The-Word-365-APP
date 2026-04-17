@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome to The Word Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:linear-gradient(135deg,#F5F0E8 0%,#EFE4D0 100%);min-height:100vh;padding:2rem 1rem;color:#0D1B2A}
+.container{max-width:600px;margin:0 auto;background:#fff;border-radius:20px;padding:3rem 2rem;box-shadow:0 20px 60px rgba(13,27,42,0.15);text-align:center;position:relative;overflow:hidden}
+.container::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#C9A84C,#E8D08A,#C9A84C)}
+.crown{font-size:40px;color:#C9A84C;margin-bottom:0.5rem}
+.eyebrow{font-family:"Cinzel",serif;font-size:11px;letter-spacing:6px;color:#C9A84C;text-transform:uppercase;margin-bottom:1rem}
+h1{font-family:"Cinzel",serif;font-size:32px;font-weight:700;margin-bottom:0.5rem;letter-spacing:2px}
+h1 em{color:#C9A84C;font-style:normal}
+.subtitle{font-family:"Cormorant Garamond",serif;font-size:18px;font-style:italic;color:#6B5B3E;margin-bottom:2rem}
+.message{background:#F5F0E8;border-radius:12px;padding:1.5rem;margin-bottom:2rem;text-align:left;font-size:15px;line-height:1.7}
+.message p{margin-bottom:0.75rem}
+.steps{text-align:left;margin-bottom:2rem}
+.step{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #EDE3D0}
+.step:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;background:#C9A84C;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:13px}
+.step-text{flex:1;font-size:14px;line-height:1.5}
+.step-text strong{display:block;margin-bottom:2px}
+.step-text span{color:#6B5B3E;font-size:13px}
+input{width:100%;padding:14px 16px;border:1.5px solid #E5D9C1;border-radius:10px;font-size:15px;margin-bottom:1rem;outline:none}
+input:focus{border-color:#C9A84C}
+.cta{display:block;width:100%;padding:16px;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer;margin-bottom:0.75rem;background:linear-gradient(135deg,#C9A84C,#A88832);text-align:center}
+.cta-fb{background:linear-gradient(135deg,#1877F2,#1565C0)}
+.cta-dark{background:linear-gradient(135deg,#0D1B2A,#1E3248)}
+.divider{display:flex;align-items:center;gap:12px;margin:1.5rem 0;color:#A89060;font-size:11px;letter-spacing:2px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:#E5D9C1}
+.success-msg{color:#1B5E20;font-size:13px;margin-top:8px;font-weight:600;display:none}
+.verse{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:15px;color:#6B5B3E;margin-top:2rem;padding-top:2rem;border-top:1px solid #EDE3D0;line-height:1.6}
+.verse-ref{display:block;font-family:"Cinzel",serif;font-size:10px;letter-spacing:3px;color:#C9A84C;margin-top:8px;font-style:normal}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="crown">&#10022;</div>
+<div class="eyebrow">Payment Confirmed</div>
+<h1>Welcome to <em>The Word Pro</em></h1>
+<p class="subtitle">Thank you for investing in your spiritual growth</p>
+<div class="message">
+<p><strong>Tee here</strong> &mdash; welcome to the family!</p>
+<p>You now have full access to The Word Pro &mdash; African Roots, Hidden Scrolls, Journal, Concordance, and every premium feature. But your journey doesn&rsquo;t stop at the app.</p>
+<p>Let&rsquo;s get you plugged into the community below.</p>
+</div>
+<div class="steps">
+<div class="step"><div class="step-num">1</div><div class="step-text"><strong>Enter your email below</strong><span>Lock in your access + get welcome resources</span></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text"><strong>Join The Empowered Healers Hub</strong><span>Your exclusive faith + freedom community</span></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text"><strong>Open The Word Pro</strong><span>Bookmark it + add to your home screen</span></div></div>
+</div>
+<input type="text" id="firstName" placeholder="First name">
+<input type="email" id="email" placeholder="Your email address">
+<button class="cta" onclick="saveEmail()" id="saveBtn">Activate My Access &#10022;</button>
+<p class="success-msg" id="successMsg">&check; You are in! Now click below to join the community</p>
+<div class="divider">THEN</div>
+<a href="https://www.facebook.com/share/g/1JbNmCfz4N/" class="cta cta-fb" target="_blank">Join The Empowered Healers Hub &rarr;</a>
+<a href="https://theword365app.com/pro" class="cta cta-dark">Open The Word Pro &rarr;</a>
+<div class="verse">"For where two or three are gathered in My name, there am I among them."<span class="verse-ref">MATTHEW 18:20</span></div>
+</div>
+<script>
+const SU="https://fnlcwwqltqksowtlefpb.supabase.co";
+const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubGN3d3FsdHFrc293dGxlZnBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MzUxOTMsImV4cCI6MjA5MTUxMTE5M30.Es_dkmm0_DNgPPdX5BiP5vtrMUBHmyrPB70Raplqblw";
+function saveEmail(){
+  const em=document.getElementById("email").value.trim();
+  const fn=document.getElementById("firstName").value.trim();
+  const btn=document.getElementById("saveBtn");
+  const msg=document.getElementById("successMsg");
+  if(!em||!/^[^@]+@[^@]+\.[^@]+$/.test(em)){alert("Please enter a valid email");return;}
+  btn.disabled=true;btn.textContent="Activating...";
+  const vid=localStorage.getItem("word_visitor_id")||localStorage.getItem("word_pro_visitor_id")||"";
+  fetch(SU+"/rest/v1/subscribers",{method:"POST",headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({email:em,first_name:fn,visitor_id:vid,source:"pro_purchase"})}).then(function(r){
+    if(r.ok||r.status===201||r.status===409){msg.style.display="block";btn.textContent="Activated";btn.style.background="#1B5E20";}
+    else{btn.disabled=false;btn.textContent="Activate My Access";alert("Try again");}
+  }).catch(function(){btn.disabled=false;btn.textContent="Activate My Access";alert("Connection error");});
+}
+</script>
+</body>
+</html>
