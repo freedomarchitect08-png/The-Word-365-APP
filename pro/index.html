@@ -519,65 +519,33 @@ body {
         <div class="voice-selector">
           <div class="voice-lbl">SELECT VOICE</div>
           <div class="voice-grid">
-            <div class="voice-card selected" onclick="selectVoice(this)">
-              <div class="voice-name">NARRATOR</div>
-              <div class="voice-desc">Deep, clear, classic</div>
+            <div class="voice-card selected" data-voice="onyx" onclick="setVoice('onyx')">
+              <div class="voice-name">Onyx</div>
+              <div class="voice-desc">Deep & rich male</div>
             </div>
-            <div class="voice-card" onclick="selectVoice(this)">
-              <div class="voice-name">GRACE</div>
-              <div class="voice-desc">Warm, feminine</div>
+            <div class="voice-card" data-voice="echo" onclick="setVoice('echo')">
+              <div class="voice-name">Echo</div>
+              <div class="voice-desc">Warm male</div>
             </div>
-            <div class="voice-card locked" onclick="showPanel('pro')">
-              <div class="voice-name">SOLOMON 👑</div>
-              <div class="voice-desc">Rich, authoritative</div>
-              <div class="voice-lock">PRO, Unlock</div>
+            <div class="voice-card" data-voice="fable" onclick="setVoice('fable')">
+              <div class="voice-name">Fable</div>
+              <div class="voice-desc">British male</div>
             </div>
-            <div class="voice-card locked" onclick="showPanel('pro')">
-              <div class="voice-name">ZARA 👑</div>
-              <div class="voice-desc">African accent, powerful</div>
-              <div class="voice-lock">PRO, Unlock</div>
+            <div class="voice-card" data-voice="alloy" onclick="setVoice('alloy')">
+              <div class="voice-name">Alloy</div>
+              <div class="voice-desc">Neutral clear</div>
             </div>
-            <div class="voice-card locked" onclick="showPanel('pro')">
-              <div class="voice-name">COVENANT 👑</div>
-              <div class="voice-desc">Deep, dramatic</div>
-              <div class="voice-lock">PRO, Unlock</div>
+            <div class="voice-card" data-voice="nova" onclick="setVoice('nova')">
+              <div class="voice-name">Nova</div>
+              <div class="voice-desc">Warm female</div>
             </div>
-            <div class="voice-card locked" onclick="showPanel('pro')">
-              <div class="voice-name">GENTLE 👑</div>
-              <div class="voice-desc">Soft, meditative</div>
-              <div class="voice-lock">PRO, Unlock</div>
+            <div class="voice-card" data-voice="shimmer" onclick="setVoice('shimmer')">
+              <div class="voice-name">Shimmer</div>
+              <div class="voice-desc">Soft female</div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="divider"><span>SCROLLING SCRIPTURE</span></div>
-      <div class="scroll-box" id="scroll-box"></div>
-    </div>
-
-    <!-- ══ AFRICAN ROOTS ══ -->
-    <div class="panel" id="panel-african">
-      <div class="sec-header">
-        <div class="sec-eye">✦ Ethiopian Orthodox Canon ✦</div>
-        <div class="sec-title">African Roots</div>
-        <div class="sec-desc">The oldest and most complete Bible on earth, 81 books preserved by the Ethiopian Orthodox Tewahedo Church, written in Ge'ez, nearly 800 years before the King James Version.</div>
-      </div>
-      <div class="africa-banner" style="margin-bottom:1.2rem; cursor:default;">
-        <div class="feat-icon">✊🏾</div>
-        <div>
-          <div class="feat-title">Exclusively African. Exclusively Yours.</div>
-          <div class="feat-desc">These books were never removed, they were simply never shared with the Western world. Until now.</div>
-        </div>
-      </div>
-      <div class="divider"><span>UNIQUE TO THE ETHIOPIAN CANON</span></div>
-      <div class="book-grid" id="african-books"></div>
-      <div class="divider" style="margin-top:1.5rem"><span>PRO FEATURE</span></div>
-      <div class="paywall">
-        <div class="paywall-crown">🌍</div>
-        <div class="paywall-title">Unlock African Roots</div>
-        <div class="paywall-sub">Full access to all 81 books of the Ethiopian canon, the sacred texts your ancestors preserved for centuries.</div>
-        <button class="unlock-btn" onclick="showPanel('pro')">UNLOCK WITH THE WORD 365 PRO →</button>
-        <div class="paywall-note">Starting at $4.99/month · Cancel anytime</div>
+        <div class="scroll-box" id="scroll-box"></div>
       </div>
     </div>
 
@@ -1113,7 +1081,7 @@ function updateScrollBox(verses) {
     </div>`).join('');
 }
 
-function togglePlay() {
+async function togglePlay() {
   const btn = document.getElementById('play-btn');
   const track = audioTracks[currentTrackKey];
   updateScrollBox(track.verses);
@@ -1121,7 +1089,7 @@ function togglePlay() {
   if(titleEl) titleEl.textContent = track.title;
   
   if(isPlaying) {
-    window.speechSynthesis.cancel();
+    if(ttsAudio) { ttsAudio.pause(); }
     isPlaying = false;
     btn.textContent = '▶';
     stopScroll();
@@ -1130,13 +1098,14 @@ function togglePlay() {
   }
   
   const text = track.verses.map(v => 'Verse ' + v.n + '. ' + v.t).join(' ');
-  if(speakText(text)) {
-    isPlaying = true;
-    btn.textContent = '⏸';
-    startScroll();
-    showToast('🎧 Playing with your device voice');
-  } else {
-    showToast('⚠️ Enable audio in your browser settings');
+  isPlaying = true;
+  btn.textContent = '⏸';
+  startScroll();
+  const ok = await speakText(text);
+  if(!ok) {
+    isPlaying = false;
+    btn.textContent = '▶';
+    stopScroll();
   }
 }
 
@@ -1307,48 +1276,64 @@ async function openBibleReader(ref, title) {
   }
 }
 
-// ── CROSS-DEVICE TTS AUDIO (Web Speech API) ──
-let ttsUtterance = null;
-let ttsVoices = [];
-let ttsSelectedVoice = null;
+// ── PREMIUM OPENAI TTS AUDIO ──
+const TTS_ENDPOINT = 'https://fnlcwwqltqksowtlefpb.supabase.co/functions/v1/ari-chat';
+let ttsAudio = null;
+let ttsSelectedVoice = localStorage.getItem('tws_voice') || 'onyx';
 
-function loadVoices() {
-  ttsVoices = window.speechSynthesis.getVoices();
-  if (!ttsSelectedVoice && ttsVoices.length) {
-    ttsSelectedVoice = ttsVoices.find(v => /en/i.test(v.lang) && /male/i.test(v.name)) 
-                    || ttsVoices.find(v => /en/i.test(v.lang))
-                    || ttsVoices[0];
-  }
-}
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-  loadVoices();
-}
-
-function speakText(text) {
-  if (!('speechSynthesis' in window)) {
-    showToast('⚠️ Audio not supported on this device');
+async function speakText(text) {
+  try {
+    // Stop any existing audio
+    if (ttsAudio) {
+      ttsAudio.pause();
+      ttsAudio = null;
+    }
+    
+    showToast('🎙️ Loading ' + ttsSelectedVoice.charAt(0).toUpperCase() + ttsSelectedVoice.slice(1) + ' voice…');
+    
+    const res = await fetch(TTS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'tts', text: text, voice: ttsSelectedVoice })
+    });
+    
+    if (!res.ok) throw new Error('TTS fetch failed');
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    ttsAudio = new Audio(url);
+    
+    ttsAudio.onended = () => {
+      isPlaying = false;
+      const btn = document.getElementById('play-btn');
+      if (btn) btn.textContent = '▶';
+      stopScroll();
+      URL.revokeObjectURL(url);
+    };
+    
+    ttsAudio.onerror = () => {
+      isPlaying = false;
+      const btn = document.getElementById('play-btn');
+      if (btn) btn.textContent = '▶';
+      showToast('⚠️ Audio playback error');
+    };
+    
+    await ttsAudio.play();
+    return true;
+  } catch (e) {
+    showToast('⚠️ Audio error - try again');
     return false;
   }
-  window.speechSynthesis.cancel();
-  ttsUtterance = new SpeechSynthesisUtterance(text);
-  if (ttsSelectedVoice) ttsUtterance.voice = ttsSelectedVoice;
-  ttsUtterance.rate = 0.85;
-  ttsUtterance.pitch = 1;
-  ttsUtterance.volume = 1;
-  ttsUtterance.onend = () => {
-    isPlaying = false;
-    const btn = document.getElementById('play-btn');
-    if (btn) btn.textContent = '▶';
-    stopScroll();
-  };
-  ttsUtterance.onerror = () => {
-    isPlaying = false;
-    const btn = document.getElementById('play-btn');
-    if (btn) btn.textContent = '▶';
-  };
-  window.speechSynthesis.speak(ttsUtterance);
-  return true;
+}
+
+function setVoice(voiceName) {
+  ttsSelectedVoice = voiceName;
+  localStorage.setItem('tws_voice', voiceName);
+  showToast('🎙️ Voice set to ' + voiceName.charAt(0).toUpperCase() + voiceName.slice(1));
+  // Update UI
+  document.querySelectorAll('.voice-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.voice === voiceName);
+  });
 }
 
 // ── ARI AI CHAT (calls secure Supabase backend) ──
