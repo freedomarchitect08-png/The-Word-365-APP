@@ -178,7 +178,7 @@ footer p { font-family:var(--font-serif); font-style:italic; font-size:13px; col
 </style>
 </head>
 <body>
-  <!-- <!-- UPGRADE BANNER -->
+  <!-- UPGRADE BANNER -->
 <div id="upgrade-banner" style="
     background: linear-gradient(135deg, #FFFFF0 0%, #f5f0e8 100%);
     color: #001f3f;
@@ -1403,6 +1403,331 @@ if ("serviceWorker" in navigator) {
   };
 })();
 </script>
+<!-- UPGRADE MODAL -->
+<div id="upgradeModal" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 31, 63, 0.95);
+    z-index: 10000;
+    overflow-y: auto;
+    padding: 20px;
+">
+    <div style="
+        max-width: 900px;
+        margin: 40px auto;
+        background: #FFFFF0;
+        border-radius: 16px;
+        padding: 40px;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    ">
+        <!-- Close Button -->
+        <button onclick="closeUpgradeModal()" style="
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #001f3f;
+            width: 40px;
+            height: 40px;
+            line-height: 1;
+        ">&times;</button>
 
-</body>
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="
+                color: #001f3f;
+                font-size: 32px;
+                margin: 0 0 10px 0;
+                font-weight: 700;
+            ">Upgrade to The Word 365 Pro</h2>
+            <p style="
+                color: #003d7a;
+                font-size: 16px;
+                margin: 0;
+            ">Access the complete Word + premium features</p>
+        </div>
+
+        <!-- Pricing Cards Container -->
+        <div style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        ">
+            <!-- Monthly Plan -->
+            <div style="
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 32px 24px;
+                text-align: center;
+                background: white;
+                transition: all 0.3s;
+            " onmouseover="this.style.borderColor='#003d7a'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,61,122,0.15)'" onmouseout="this.style.borderColor='#e0e0e0'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <h3 style="
+                    color: #001f3f;
+                    font-size: 20px;
+                    margin: 0 0 16px 0;
+                    font-weight: 600;
+                ">Monthly</h3>
+                <div style="margin-bottom: 24px;">
+                    <span style="
+                        font-size: 48px;
+                        font-weight: 700;
+                        color: #001f3f;
+                    ">$6.99</span>
+                    <span style="
+                        color: #666;
+                        font-size: 16px;
+                    ">/month</span>
+                </div>
+                <a href="https://buy.stripe.com/28EcN74ZQ8X5cqb5hg8so01" target="_blank" style="
+                    display: block;
+                    background: linear-gradient(135deg, #003d7a 0%, #001f3f 100%);
+                    color: #FFFFF0;
+                    padding: 14px 28px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 16px;
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    Get Monthly Pro
+                </a>
+            </div>
+
+            <!-- Annual Plan (Recommended) -->
+            <div style="
+                border: 3px solid #d4af37;
+                border-radius: 12px;
+                padding: 32px 24px;
+                text-align: center;
+                background: white;
+                position: relative;
+                box-shadow: 0 8px 24px rgba(212,175,55,0.2);
+            ">
+                <!-- Best Value Badge -->
+                <div style="
+                    position: absolute;
+                    top: -12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(135deg, #c99c3a 0%, #d4af37 100%);
+                    color: #001f3f;
+                    padding: 6px 20px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 4px 12px rgba(201,156,58,0.3);
+                ">SAVE $34</div>
+
+                <h3 style="
+                    color: #001f3f;
+                    font-size: 20px;
+                    margin: 8px 0 16px 0;
+                    font-weight: 600;
+                ">Annual</h3>
+                <div style="margin-bottom: 8px;">
+                    <span style="
+                        font-size: 48px;
+                        font-weight: 700;
+                        color: #001f3f;
+                    ">$49.99</span>
+                    <span style="
+                        color: #666;
+                        font-size: 16px;
+                    ">/year</span>
+                </div>
+                <p style="
+                    color: #d4af37;
+                    font-size: 14px;
+                    margin: 0 0 24px 0;
+                    font-weight: 600;
+                ">Just $4.17/month</p>
+                <a href="https://buy.stripe.com/fZu00laka2yHduf9xw8so00" target="_blank" style="
+                    display: block;
+                    background: linear-gradient(135deg, #c99c3a 0%, #d4af37 100%);
+                    color: #001f3f;
+                    padding: 14px 28px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 700;
+                    font-size: 16px;
+                    box-shadow: 0 4px 12px rgba(201,156,58,0.3);
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    Get Annual Pro
+                </a>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div style="
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-top: 32px;
+        ">
+            <h4 style="
+                color: #001f3f;
+                font-size: 18px;
+                margin: 0 0 16px 0;
+                text-align: center;
+                font-weight: 600;
+            ">Pro Features Include:</h4>
+            <ul style="
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                columns: 2;
+                column-gap: 32px;
+            ">
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    Missing Books of the Bible
+                </li>
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    African Books Collection
+                </li>
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    Premium Voice Options
+                </li>
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    All 9 Translation Options
+                </li>
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    Audio Narration
+                </li>
+                <li style="
+                    color: #003d7a;
+                    margin-bottom: 12px;
+                    padding-left: 28px;
+                    position: relative;
+                    font-size: 15px;
+                ">
+                    <span style="
+                        position: absolute;
+                        left: 0;
+                        color: #d4af37;
+                        font-weight: 700;
+                    ">✓</span>
+                    Priority Support
+                </li>
+            </ul>
+        </div>
+
+        <!-- Mobile Responsive Styles -->
+        <style>
+            @media (max-width: 768px) {
+                #upgradeModal > div {
+                    padding: 24px !important;
+                    margin: 20px auto !important;
+                }
+                #upgradeModal > div > div:nth-child(2) h2 {
+                    font-size: 24px !important;
+                }
+                #upgradeModal > div > div:nth-child(3) {
+                    grid-template-columns: 1fr !important;
+                }
+                #upgradeModal > div > div:nth-child(4) ul {
+                    columns: 1 !important;
+                }
+            }
+        </style>
+    </div>
+</div>
+
+<!-- UPGRADE MODAL JAVASCRIPT -->
+<script>
+function openUpgradeModal() {
+    document.getElementById('upgradeModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUpgradeModal() {
+    document.getElementById('upgradeModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside the content
+document.getElementById('upgradeModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeUpgradeModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeUpgradeModal();
+    }
+});
+</script></body>
 </html>
