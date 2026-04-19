@@ -178,9 +178,35 @@ footer p { font-family:var(--font-serif); font-style:italic; font-size:13px; col
 </style>
 </head>
 <body>
-<div class="app">
-
-<header>
+  <!-- <!-- UPGRADE BANNER -->
+<div id="upgrade-banner" style="
+    background: linear-gradient(135deg, #FFFFF0 0%, #f5f0e8 100%);
+    color: #001f3f;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+">
+    <span style="margin-right: 15px; font-weight: 500;">✨ Unlock Missing Books + African Books + Premium Voices</span>
+    <button onclick="openUpgradeModal()" style="
+        background: linear-gradient(135deg, #c99c3a 0%, #d4af37 100%);
+        color: #FFFFF0;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+        box-shadow: 0 3px 8px rgba(201, 156, 58, 0.35);
+        transition: transform 0.2s, box-shadow 0.2s;
+    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(201, 156, 58, 0.45)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 8px rgba(201, 156, 58, 0.35)'">
+        Upgrade to Pro
+    </button>
+</div><header>
   <div class="header-eyebrow">✦ Sacred Scripture ✦</div>
   <h1>THE <em>WORD</em></h1>
   <p class="subtitle">Bible in a Year — Chronological Reading Plan</p>
