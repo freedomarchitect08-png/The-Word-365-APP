@@ -243,7 +243,7 @@ footer p { font-family:var(--font-serif); font-style:italic; font-size:13px; col
     <div class="sel-block">
       <div class="sel-lbl">Translation</div>
       <div class="sel-wrap">
-        <select id="versionSelect">
+        <select id="versionSelect" onchange="loadReading()">
           <option value="kjv">KJV  King James Version</option>
           <option value="web" selected>WEB  World English Bible</option>
           <option value="asv">ASV  American Standard Version</option>
@@ -626,27 +626,101 @@ const GENESIS_1_2 = `<div class="chapter-head">Genesis 1 — The Creation</div>
 
 function getContent(day) {
   if(day===1) return GENESIS_1_2;
+  // For all other days, return a loading placeholder;
+  // loadScriptureFromAPI() will replace it asynchronously.
   const d = planMap[day];
   return `<div class="chapter-head">${d.books} — ${d.title}</div>
-<p class="verse-line" style="font-style:italic;color:var(--text-muted);font-size:calc(var(--font-size) * 0.9);">
-  Open your Bible to <strong style="color:var(--gold-light);">${d.books}</strong> and follow along. 
-  This chronological plan brings you through all 66 books of the Bible in the order events occurred in history —
-  so Scripture comes alive as one unfolding story of God's redemption.
-</p>
-<p class="verse-line" style="margin-top:18px;">
-  <span class="verse-num">✦</span>
-  <em>"All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the servant of God may be thoroughly equipped for every good work."</em>
-</p>
-<p class="verse-line" style="margin-top:6px;padding-left:20px;color:var(--text-muted);font-size:calc(var(--font-size)*0.82);">— 2 Timothy 3:16–17</p>
-<p class="verse-line" style="margin-top:18px;">
-  <span class="verse-num">✦</span>
-  Press <strong style="color:var(--gold);">Play</strong> above to have today's reading narrated aloud.
-  Select a voice from the narrator options to find your preferred reading experience.
-</p>
-<p class="verse-line" style="margin-top:12px;">
-  <span class="verse-num">✦</span>
-  When you've finished today's reading, press <strong style="color:var(--gold);">Complete ✓</strong> to track your progress through the year.
-</p>`;
+<p class="verse-line" style="text-align:center;padding:2rem;font-style:italic;color:var(--text-muted);">Loading scripture…</p>`;
+}
+
+// Translation codes supported by bible-api.com
+const TRANSLATION_MAP = {
+  kjv: 'kjv',
+  web: 'web',
+  asv: 'asv',
+  bbe: 'bbe',
+  nlt: 'nlt',
+  niv: 'kjv',  // fallback to kjv if not available
+  esv: 'kjv',  // fallback to kjv if not available
+  amp: 'kjv',  // fallback to kjv if not available
+  msg: 'web'   // fallback to web if not available
+};
+
+// Parse a books string like "Genesis 1–3" or "Matthew 5–7 / Luke 3" into
+// an array of bible-api.com compatible reference strings.
+function parseBooksToRefs(booksStr) {
+  // Split on " / " or " · " for multi-book days
+  const parts = booksStr.split(/\s*[\/·]\s*/);
+  const refs = [];
+  parts.forEach(part => {
+    part = part.trim();
+    if(!part) return;
+    // Normalise en-dash to hyphen
+    part = part.replace(/\u2013/g, '-');
+    refs.push(part);
+  });
+  return refs;
+}
+
+async function loadScriptureFromAPI() {
+  const day = currentDay;
+  if(day === 1) return; // Day 1 already has hardcoded content
+
+  const d = planMap[day];
+  const translation = TRANSLATION_MAP[document.getElementById('versionSelect').value] || 'web';
+  const refs = parseBooksToRefs(d.books);
+  const scroll = document.getElementById('scriptureScroll');
+
+  let combinedHTML = '';
+  let combinedText = '';
+
+  for(const ref of refs) {
+    try {
+      const url = 'https://bible-api.com/' + encodeURIComponent(ref) + '?translation=' + translation;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      if(data.verses && data.verses.length) {
+        // Group verses by book+chapter for chapter headings
+        let lastChapter = null;
+        data.verses.forEach(v => {
+          const chapterKey = (v.book_name || '') + ' ' + (v.chapter || '');
+          if(chapterKey !== lastChapter) {
+            lastChapter = chapterKey;
+            const headText = v.book_name + ' ' + v.chapter;
+            combinedHTML += `<div class="chapter-head">${headText}</div>`;
+            combinedText += headText + '. PAUSE. ';
+          }
+          combinedHTML += `<p class="verse-line"><span class="verse-num">${v.verse}</span>${v.text.trim()}</p>`;
+          combinedText += v.text.trim() + ' ';
+        });
+      } else {
+        combinedHTML += `<p class="verse-line" style="font-style:italic;color:var(--text-muted);">Scripture for ${ref} could not be loaded. Please open your Bible to ${ref}.</p>`;
+      }
+    } catch(e) {
+      combinedHTML += `<p class="verse-line" style="font-style:italic;color:var(--text-muted);">Could not load ${ref}. Check your connection and try again.</p>`;
+    }
+  }
+
+  // Only update if the user hasn't navigated away
+  if(currentDay !== day) return;
+
+  scroll.innerHTML = combinedHTML;
+  scroll.scrollTop = 0;
+
+  // Fix audio: use only the real scripture text, not instructions
+  combinedText = combinedText
+    .replace(/\u2013|\u2014/g, ' ')
+    .replace(/\s*-\s*/g, ' ')
+    .replace(/✦/g, '')
+    .replace(/·/g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
+  readingText = combinedText;
+  const words = readingText.split(' ').length;
+  totalEstimate = Math.round((words / 130) * 60 / speed);
+  updateAudioUI();
 }
 
 // STATE
@@ -743,30 +817,35 @@ function loadReading(){
   document.getElementById('readingTitle').textContent=d.title;
   document.getElementById('readingMeta').textContent=d.books+' . '+d.tag;
   document.getElementById('readingTag').textContent='Day '+currentDay;
-  const html=getContent(currentDay);
-  document.getElementById('scriptureScroll').innerHTML=html;
-  document.getElementById('scriptureScroll').scrollTop=0;
 
-  // Build narration text with chapter heading pauses and no dashes
-  const tmp=document.createElement('div');
-  tmp.innerHTML=html;
+  if(currentDay === 1){
+    // Day 1 has hardcoded scripture — render it immediately
+    const html = getContent(1);
+    document.getElementById('scriptureScroll').innerHTML = html;
+    document.getElementById('scriptureScroll').scrollTop = 0;
 
-  // Give chapter headings a spoken title followed by a pause placeholder
-  tmp.querySelectorAll('.chapter-head').forEach(el=>{
-    const clean = el.innerText.replace(/[✦•\-\u2013\u2014]/g,'').trim();
-    el.innerText = clean + '. PAUSE. ';
-  });
+    // Build audio text from the actual scripture HTML
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('.chapter-head').forEach(el=>{
+      const clean = el.innerText.replace(/[✦•\-\u2013\u2014]/g,'').trim();
+      el.innerText = clean + '. PAUSE. ';
+    });
+    let raw = tmp.innerText;
+    raw = raw.replace(/\u2013|\u2014/g,' ').replace(/\s*-\s*/g,' ').replace(/✦/g,'').replace(/·/g,'.').replace(/\s+/g,' ').trim();
+    readingText = raw;
+  } else {
+    // For all other days: show a loading state, then fetch real scripture
+    const loadingHTML = getContent(currentDay);
+    document.getElementById('scriptureScroll').innerHTML = loadingHTML;
+    document.getElementById('scriptureScroll').scrollTop = 0;
+    // Set a placeholder so audio doesn't read instructions while loading
+    readingText = '';
+    loadScriptureFromAPI();
+  }
 
-  let raw = tmp.innerText;
-  raw = raw.replace(/\u2013|\u2014/g, ' ');  // en dash, em dash
-  raw = raw.replace(/\s*-\s*/g, ' ');         // hyphens as dashes
-  raw = raw.replace(/✦/g, '');
-  raw = raw.replace(/·/g, '.');
-  raw = raw.replace(/\s+/g,' ').trim();
-
-  readingText = raw;
-  const words=readingText.split(' ').length;
-  totalEstimate=Math.round((words/130)*60/speed);
+  const words = readingText.split(' ').length;
+  totalEstimate = Math.round((words/130)*60/speed);
   elapsed=0; updateAudioUI();
   localStorage.setItem('bibleDay',currentDay);
   updateProgress();
