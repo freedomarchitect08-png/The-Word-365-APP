@@ -646,6 +646,19 @@ const TRANSLATION_MAP = {
   msg: 'web'   // fallback to web if not available
 };
 
+// Chapter counts for books that appear in PLAN_RAW without chapter numbers
+// (e.g., "Nahum · Habakkuk · Zephaniah", "James / Jude", etc.)
+const BOOK_CHAPTERS = {
+  'Nahum': 3, 'Habakkuk': 3, 'Zephaniah': 3, 'Haggai': 2,
+  'Philippians': 4, 'Colossians': 4, 'James': 5, 'Jude': 1,
+  'Obadiah': 1, 'Philemon': 1, '2 John': 1, '3 John': 1,
+  'Ruth': 4, 'Jonah': 4, 'Micah': 7, 'Malachi': 4,
+  'Joel': 3, 'Amos': 9, 'Titus': 3, '1 Thessalonians': 5,
+  '2 Thessalonians': 3, '1 Timothy': 6, '2 Timothy': 4,
+  'Galatians': 6, 'Ephesians': 6, '1 John': 5, '2 Peter': 3,
+  '1 Peter': 5, 'Revelation': 22
+};
+
 // Parse a books string like "Genesis 1–3" or "Matthew 5–7 / Luke 3" into
 // an array of individual chapter references compatible with bible-api.com.
 // bible-api.com only supports one chapter per request, so chapter ranges
@@ -676,8 +689,11 @@ function parseBooksToRefs(booksStr) {
         refs.push(book + ' ' + ch);
       }
     } else {
-      // Fallback: pass through as-is
-      refs.push(seg);
+      // No chapter number — look up total chapters from table, default to 1
+      const totalChs = BOOK_CHAPTERS[seg] || 1;
+      for(let ch = 1; ch <= totalChs; ch++) {
+        refs.push(seg + ' ' + ch);
+      }
     }
   });
 
